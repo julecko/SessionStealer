@@ -3,7 +3,7 @@ setlocal EnableExtensions EnableDelayedExpansion
 
 REM Defaults
 
-set "EXEC_NAME=ProjectName"
+set "EXEC_NAME=sessionstealer"
 set "BUILD_TYPE=Release"
 set "RUN_EXEC=0"
 set "RUN_ARGS="

@@ -49,7 +49,7 @@ run_cppcheck() {
 # Defaults
 BUILD_TYPE="Release"
 RUN_EXEC=0
-EXEC_NAME="project-name"
+EXEC_NAME="sessionstealer"
 RUN_ARGS=()
 
 # Argument parsing
