@@ -99,7 +99,7 @@ cmake --build "$BUILD_DIR" --config "$BUILD_TYPE" \
 
 # Run
 if [[ $RUN_EXEC -eq 1 ]]; then
-    EXEC="$BUILD_DIR/$EXEC_NAME"
+    EXEC="$BUILD_DIR/bin/$EXEC_NAME"
 
     if [[ ! -x "$EXEC" ]]; then
         echo "Error: executable not found or not executable: $EXEC"

@@ -1,5 +1,5 @@
-#include "cli_args.h"
-#include "version.h"
+#include "sessionstealer/cli_args.h"
+#include "sessionstealer/version.h"
 
 #include <stdio.h>
 #include <stdlib.h>

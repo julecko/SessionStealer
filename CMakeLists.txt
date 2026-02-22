@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 3.10)
 # When stable set project version to 1.0.0
 project(sessionstealer VERSION 0.0.0 LANGUAGES C CXX)
 
+# -----------------------
+# Global compiler settings
+# -----------------------
 if (CMAKE_C_COMPILER)
     set(CMAKE_C_STANDARD 11)
     set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -21,109 +24,22 @@ if (CMAKE_CXX_COMPILER)
     message(STATUS "C++ Compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
 
-if(WIN32)
-    #find_package(unofficial-sodium CONFIG REQUIRED)
-    #find_package(FLTK CONFIG REQUIRED)
-else()
-    #find_package(FLTK REQUIRED)
-    #find_package(PkgConfig REQUIRED)
-    #pkg_check_modules(SODIUM REQUIRED libsodium)
-endif()
-
-set(SOURCES)
-
-if (CMAKE_C_COMPILER)
-    list(APPEND SOURCES
-        src/main.c
-        src/cli_args.c
-        # add other C files here
-    )
-endif()
-
-if (CMAKE_CXX_COMPILER)
-    list(APPEND SOURCES
-        # src/main.cpp
-        # add other C++ files here
-    )
-endif()
-
-# Default exec name
-if(NOT DEFINED EXECUTABLE_NAME)
-    set(EXECUTABLE_NAME "sessionstealer")
-endif()
-
-add_executable(sessionstealer ${SOURCES})
-
-set_target_properties(sessionstealer PROPERTIES OUTPUT_NAME ${EXECUTABLE_OUTPUT_NAME})
-
-if(WIN32)
-    #set_target_properties(sessionstealer PROPERTIES WIN32_EXECUTABLE TRUE)
-endif()
-
-if(WIN32)
-    #target_link_libraries(sessionstealer PRIVATE unofficial-sodium::sodium)
-else()
-    #target_include_directories(sessionstealer PRIVATE ${SODIUM_INCLUDE_DIRS})
-    #target_link_libraries(sessionstealer PRIVATE ${SODIUM_LIBRARIES})
-endif()
-
-target_include_directories(sessionstealer PRIVATE
-    ${PROJECT_SOURCE_DIR}/include
-)
-
-target_compile_definitions(sessionstealer PRIVATE
-    PROJECT_VERSION=\"${PROJECT_VERSION}\"
-)
-
-# ==============================
-# Compiler-specific configuration
-# ==============================
-
+# -----------------------
+# Global compiler flags per config
+# -----------------------
 if (MSVC)
-
-    # Debug
-    target_compile_options(sessionstealer PRIVATE
-        $<$<CONFIG:Debug>:/Zi /Od>
-    )
-    target_link_options(sessionstealer PRIVATE
-        $<$<CONFIG:Debug>:/DEBUG>
-    )
-    target_compile_definitions(sessionstealer PRIVATE
-        $<$<CONFIG:Debug>:DEBUG_MODE=1>
-    )
-
-    # Release
-    target_compile_options(sessionstealer PRIVATE
-        $<$<CONFIG:Release>:/O2>
-    )
-    target_compile_definitions(sessionstealer PRIVATE
-        $<$<CONFIG:Release>:NDEBUG>
-    )
-
-else() # GCC / Clang
-
-    # Debug
-    target_compile_options(sessionstealer PRIVATE
-        $<$<CONFIG:Debug>:-g -O0 -fno-omit-frame-pointer>
-    )
-    target_compile_definitions(sessionstealer PRIVATE
-        $<$<CONFIG:Debug>:DEBUG_MODE=1>
-    )
-
-    # Optional ASAN (ONLY here)
-    target_compile_options(sessionstealer PRIVATE
-        $<$<CONFIG:Debug>:-fsanitize=address>
-    )
-    target_link_options(sessionstealer PRIVATE
-        $<$<CONFIG:Debug>:-fsanitize=address>
-    )
-
-    # Release
-    target_compile_options(sessionstealer PRIVATE
-        $<$<CONFIG:Release>:-O3>
-    )
-    target_compile_definitions(sessionstealer PRIVATE
-        $<$<CONFIG:Release>:NDEBUG>
-    )
-
+    set(GLOBAL_DEBUG_FLAGS /Zi /Od)
+    set(GLOBAL_RELEASE_FLAGS /O2)
+else()
+    set(GLOBAL_DEBUG_FLAGS -g -O0 -fno-omit-frame-pointer -fsanitize=address)
+    set(GLOBAL_RELEASE_FLAGS -O3)
 endif()
+
+include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR}/include/dlls)
+
+# -----------------------
+# Add subdirectories
+# -----------------------
+add_subdirectory(src)
+add_subdirectory(dlls/discovery)

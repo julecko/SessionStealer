@@ -84,8 +84,8 @@ REM Run
 
 if "%RUN_EXEC%"=="1" (
     echo.
-    echo Running "%BUILD_DIR%\%BUILD_TYPE%\%EXEC_NAME%.exe" %RUN_ARGS%
-    "%BUILD_DIR%\%BUILD_TYPE%\%EXEC_NAME%.exe" %RUN_ARGS%
+    echo Running "%BUILD_DIR%\bin\%BUILD_TYPE%\%EXEC_NAME%.exe" %RUN_ARGS%
+    "%BUILD_DIR%\bin\%BUILD_TYPE%\%EXEC_NAME%.exe" %RUN_ARGS%
 )
 
 endlocal
