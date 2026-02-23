@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <windows.h>
+#include <stdbool.h>
 
 #define EDGE_PATH_SYSTEM "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe"
 #define EDGE_PATH_SYSTEM_OLD "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe"
@@ -40,28 +41,33 @@ const char *query_reg_path() {
                 NULL,
                 (LPBYTE)path,
                 &size
-            ) == ERROR_SUCCESS)
-        {
-            printf("msedge path: %s\n", path);
+            ) == ERROR_SUCCESS) {
+            return path;
         }
 
         RegCloseKey(hKey);
     } else {
-        printf("Not found (%ld)\n", result);
         return NULL;
     }
 
     return path;
 }
 
-discovery_browser_t discover_edge() {
+bool discover_edge(discovery_browser_t *browser) {
+    browser->browser_name = DISCOVERY_EDGE;
+    const char *exe_path;
+
+    exe_path = query_reg_path();
+    if (exe_path != NULL) {
+    browser->exe_path = exe_path;
+        return true;
+    }
     discovery_browser_t discovered_browser = {0};
     const char *home_path = get_home_folder();
-    query_reg_path();
     if (home_path) {
         printf("Home folder: %s\n", home_path);
     } else {
         printf("Failed to get home folder\n");
     }
-    return discovered_browser;
+    return false;
 }

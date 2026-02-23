@@ -2,7 +2,8 @@
 #define DISCOVERY_EDGE_H
 
 #include "discovery/discovery.h"
+#include <stdbool.h>
 
-discovery_browser_t discover_edge();
+bool discover_edge(discovery_browser_t *browser);
 
 #endif

@@ -13,7 +13,7 @@
 
 typedef enum {
     DISCOVERY_EDGE,
-    DISCOVER_CHROME,
+    DISCOVERY_CHROME,
     DISCOVERY_FIREFOX,
 } discovery_browser_name_t;
 
