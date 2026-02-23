@@ -1,5 +1,7 @@
 set(MAIN_SOURCES
     discovery.c
+    edge.c
+    utils.c
 )
 
 add_library(discovery SHARED ${MAIN_SOURCES})

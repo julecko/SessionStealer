@@ -31,9 +31,6 @@ int main(int argc, char *argv[]) {
     printf("discover_browsers returned %d\n", result);
 
     FreeLibrary(hLib);
-    return 0;
 
-
-    printf("Project version: %s\n", PROJECT_VERSION);
     return 0;
 }
