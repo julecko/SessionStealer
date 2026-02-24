@@ -15,6 +15,7 @@ typedef enum {
     DISCOVERY_EDGE,
     DISCOVERY_CHROME,
     DISCOVERY_FIREFOX,
+    DISCOVERY_BROWSER_ALL,
 } discovery_browser_name_t;
 
 typedef struct {
@@ -25,7 +26,7 @@ typedef struct {
 typedef struct {
     size_t length;
     size_t capacity;
-    discovery_browser_t *discovered_browsers;
+    discovery_browser_t discovered_browsers[DISCOVERY_BROWSER_ALL];
 } discovery_browser_list_t;
 
 DISCOVERY_API discovery_browser_list_t discover_browsers(void);

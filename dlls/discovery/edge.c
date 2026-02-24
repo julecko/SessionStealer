@@ -63,11 +63,11 @@ bool discover_edge(discovery_browser_t *browser) {
         return true;
     }
     discovery_browser_t discovered_browser = {0};
-    const char *home_path = get_home_folder();
+    /*const char *home_path = get_home_folder();
     if (home_path) {
         printf("Home folder: %s\n", home_path);
     } else {
         printf("Failed to get home folder\n");
-    }
+    }*/
     return false;
 }

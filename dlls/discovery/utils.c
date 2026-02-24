@@ -3,7 +3,7 @@
 #include <string.h>
 
 
-const char *get_home_folder() {
+/*const char *get_home_folder() {
     static char buffer[MAX_PATH];
     DWORD size = sizeof(buffer);
 
@@ -21,3 +21,4 @@ const char *get_home_folder() {
 
     return NULL;
 }
+*/
