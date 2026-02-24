@@ -39,7 +39,8 @@ run_cppcheck() {
         --quiet \
         --suppress=missingIncludeSystem \
         -I"$(pwd)/include" \
-        "$(pwd)/src"
+        "$(pwd)/src" \
+        "$(pwd)/dlls
 
     local CPPCHECK_EXIT=$?
     echo "Cppcheck finished with exit code $CPPCHECK_EXIT"

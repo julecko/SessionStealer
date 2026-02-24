@@ -122,7 +122,9 @@ echo Running Cppcheck static analysis only...
     --quiet ^
     --suppress=missingIncludeSystem ^
     -I"%CD%\include" ^
-    "%CD%\src"
+    -I"%CD%\include\dlls" ^
+    "%CD%\src" ^
+    "%CD%\dlls"
 
 set "CPPCHECK_EXIT=%ERRORLEVEL%"
 echo Cppcheck finished with exit code %CPPCHECK_EXIT%

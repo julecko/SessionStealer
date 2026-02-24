@@ -11,16 +11,7 @@
 #define EDGE_PATH_USER "%s\\AppData\\Local\\Microsoft\\Edge\\Application\\msedge.exe"
 #define EDGE_PATH_REG "Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\msedge.exe"
 
-int file_exists(const char* path) {
-    DWORD attr = GetFileAttributesA(path);
-    if (attr == INVALID_FILE_ATTRIBUTES)
-        return 0;
-    if (attr & FILE_ATTRIBUTE_DIRECTORY)
-        return 0;
-    return 1;
-}
-
-const char *query_reg_path() {
+static const char *query_reg_path() {
     HKEY hKey;
     static char path[MAX_PATH];
     DWORD size = sizeof(path);
@@ -42,6 +33,7 @@ const char *query_reg_path() {
                 (LPBYTE)path,
                 &size
             ) == ERROR_SUCCESS) {
+            RegCloseKey(hKey);
             return path;
         }
 
@@ -58,11 +50,11 @@ bool discover_edge(discovery_browser_t *browser) {
     const char *exe_path;
 
     exe_path = query_reg_path();
-    if (exe_path != NULL) {
-    browser->exe_path = exe_path;
+    if (exe_path != NULL && file_exists(exe_path)) {
+        strncpy(browser->exe_path, exe_path, MAX_PATH - 1);
+        browser->exe_path[MAX_PATH - 1] = '\0';
         return true;
     }
-    discovery_browser_t discovered_browser = {0};
     /*const char *home_path = get_home_folder();
     if (home_path) {
         printf("Home folder: %s\n", home_path);

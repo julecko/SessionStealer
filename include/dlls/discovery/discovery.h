@@ -11,24 +11,26 @@
     #define DISCOVERY_API
 #endif
 
+#include <windows.h>
+
 typedef enum {
     DISCOVERY_EDGE,
     DISCOVERY_CHROME,
     DISCOVERY_FIREFOX,
-    DISCOVERY_BROWSER_ALL,
+    DISCOVERY_BROWSER_COUNT,
 } discovery_browser_name_t;
 
 typedef struct {
     discovery_browser_name_t browser_name;
-    const char *exe_path;
+    char exe_path[MAX_PATH];
 } discovery_browser_t;
 
 typedef struct {
     size_t length;
-    size_t capacity;
-    discovery_browser_t discovered_browsers[DISCOVERY_BROWSER_ALL];
+    discovery_browser_t browsers[DISCOVERY_BROWSER_COUNT];
 } discovery_browser_list_t;
 
+typedef discovery_browser_list_t (*discover_browsers_fn)(void);
 DISCOVERY_API discovery_browser_list_t discover_browsers(void);
 
 #endif

@@ -1,6 +1,8 @@
 set(MAIN_SOURCES
     main.c
     cli_args.c
+    utils.c
+    dll_loader.c
 )
 
 add_executable(sessionstealer ${MAIN_SOURCES})
