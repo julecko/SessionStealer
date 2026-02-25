@@ -10,6 +10,9 @@ set_target_properties(edge_browser PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
+find_package(libwebsockets CONFIG REQUIRED)
+target_link_libraries(edge_browser PRIVATE websockets_shared)
+
 target_compile_definitions(edge_browser PRIVATE
     $<$<CONFIG:Debug>:DEBUG_MODE=1>
     $<$<CONFIG:Release>:NDEBUG>

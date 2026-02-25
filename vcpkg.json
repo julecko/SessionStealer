@@ -1,0 +1,8 @@
+{
+    "name": "sessionstealer",
+    "version": "0.1.0",
+    "builtin-baseline": "89dc8be6dbcf18482a5a1bf86a2f4615c939b0fb",
+    "dependencies": [
+        "libwebsockets"
+    ]
+}

@@ -10,7 +10,7 @@ static discovery_browser_name_t browser_map[] = {
     [CLI_BROWSER_FIREFOX] = DISCOVERY_FIREFOX
 };
 
-const char *enum_browser_to_char(discovery_browser_name_t e) {
+static const char *enum_browser_to_char(discovery_browser_name_t e) {
     switch (e) {
     case DISCOVERY_CHROME:
         return "Chrome";

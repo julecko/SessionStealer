@@ -53,12 +53,18 @@ REM Build
 
 :build
 
+if not defined VCPKG_ROOT (
+    echo ERROR: VCPKG_ROOT is not set
+    exit /b 1
+)
+
 set "BUILD_DIR=build"
 
 if not exist "%BUILD_DIR%" mkdir "%BUILD_DIR%"
 echo.
 echo Configuring (%BUILD_TYPE%)...
 cmake -S . -B "%BUILD_DIR%" ^
+  -DCMAKE_TOOLCHAIN_FILE="%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake" ^
   -DCMAKE_BUILD_TYPE=%BUILD_TYPE% ^
   -DEXECUTABLE_OUTPUT_NAME=%EXEC_NAME%
 
