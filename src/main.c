@@ -9,11 +9,6 @@
 #include <stdbool.h>
 #include <windows.h>
 
-static discovery_browser_name_t browser_map[] = {
-    [CLI_BROWSER_CHROME]  = DISCOVERY_CHROME,
-    [CLI_BROWSER_EDGE]    = DISCOVERY_EDGE,
-    [CLI_BROWSER_FIREFOX] = DISCOVERY_FIREFOX
-};
 
 int main(int argc, char *argv[]) {
     cli_args_t args = create_cli_args();
@@ -89,6 +84,11 @@ int main(int argc, char *argv[]) {
     const char *selected_browser_dll_name = find_dll_browser(selected_browser->browser_name);
     if (!selected_browser_dll_name) {
         printf("Dll for selected browser was not found, install %s\n", browser_map_dll[selected_browser->browser_name]);
+        return EXIT_FAILURE;
+    }
+    HMODULE hBrowserLib = LoadLibraryA(selected_browser_dll_name);
+    if (!hBrowserLib) {
+        printf("Couldnt load %s\n", selected_browser_dll_name);
         return EXIT_FAILURE;
     }
 
