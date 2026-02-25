@@ -1,8 +1,10 @@
 #ifndef DLL_LOADER_H
 #define DLL_LOADER_H
 
-typedef struct {
+#include "dlls/discovery/discovery.h"
 
-} dlls_list;
+extern const char *browser_map_dll[];
+
+const char *find_dll_browser(discovery_browser_name_t browser);
 
 #endif

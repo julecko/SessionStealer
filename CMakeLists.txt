@@ -43,3 +43,4 @@ include_directories(${PROJECT_SOURCE_DIR}/include/dlls)
 # -----------------------
 add_subdirectory(src)
 add_subdirectory(dlls/discovery)
+add_subdirectory(dlls/edge)

