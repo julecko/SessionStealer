@@ -22,32 +22,26 @@ const char *enum_browser_to_char(discovery_browser_name_t e) {
         return NULL;
     }
 }
-discovery_browser_t *pick_browser(discovery_browser_list_t discovered_browsers) {
-    if (discovered_browsers.length < 1) {
+discovery_browser_t *pick_browser(discovery_browser_list_t *discovered_browsers, cli_args_browser_t args_browser) {
+    if (discovered_browsers->length < 1) {
         printf("No browsers discovered\n");
     }
 
-    discovery_browser_t *selected_browser;
-    if (!(args.browser == CLI_BROWSER_DETECT)) {
-        discovery_browser_name_t target = browser_map[args.browser];
-        bool found = false;
+    if (!(args_browser == CLI_BROWSER_DETECT)) {
+        discovery_browser_name_t target = browser_map[args_browser];
 
-        for (size_t i = 0; i < discovered_browsers.length; i++) {
-            discovery_browser_t *browser = &discovered_browsers.browsers[i];
+        for (size_t i = 0; i < discovered_browsers->length; i++) {
+            discovery_browser_t *browser = &discovered_browsers->browsers[i];
             if (browser->browser_name == target) {
-                selected_browser = browser;
-                found = true;
-                break;
+                return browser;
             }
         }
-        if (!found) {
-            printf("Selected browser was not found on this PC\n");
-            return EXIT_SUCCESS;
-        }
+        printf("Selected browser was not found on this PC\n");
+        return NULL;
     } else {
         printf("Discovered browsers:\n");
-        for (size_t i = 0; i < discovered_browsers.length; i++) {
-            discovery_browser_t *discovered_browser = &discovered_browsers.browsers[i];
+        for (size_t i = 0; i < discovered_browsers->length; i++) {
+            discovery_browser_t *discovered_browser = &discovered_browsers->browsers[i];
             const char *browser_name = enum_browser_to_char(discovered_browser->browser_name);
             printf("    %d. %s\n", i+1, browser_name);
         }
@@ -56,16 +50,20 @@ discovery_browser_t *pick_browser(discovery_browser_list_t discovered_browsers) 
             printf("Select browser number: ");
             if (scanf("%zu", &input) != 1) {
                 printf("Invalid input! Enter number\n");
+
+                int c;
+                while ((c = getchar()) != '\n' && c != EOF);
+
                 continue;
             } else {
-                if (input >= 1 && input <= discovered_browsers.length) {
+                if (input >= 1 && input <= discovered_browsers->length) {
                     break;
                 } else {
-                    printf("Select in range %zu-%zu\n", 1, discovered_browsers.length);
+                    printf("Select in range %zu-%zu\n", 1, discovered_browsers->length);
                 }
             }
         }
         input--;
-        selected_browser = &discovered_browsers.browsers[input];
+        return &discovered_browsers->browsers[input];
     }
 }
