@@ -142,10 +142,6 @@ void load_cookies(const char *ws_url, const FILE *infile) {
         "]}}"
     );
 
-    FILE *f = fopen("random.json", "w");
-    fprintf(f, "%s", json);
-    fclose(f);
-
     ws_send(ws, json);
 
     ws_send(ws, "{\"id\":3,\"method\":\"Page.reload\"}");
@@ -154,5 +150,5 @@ void load_cookies(const char *ws_url, const FILE *infile) {
     close_websocket(ws);
     free_cookies(cookies, count);
 
-    printf("Cookies loaded into browser\n");
+    printf("Cookies (%d) loaded into browser\n", count);
 }

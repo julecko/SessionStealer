@@ -27,3 +27,5 @@ CMakeUserPresets.json
 test.c
 test
 cookies.csv
+test.py
+random.json

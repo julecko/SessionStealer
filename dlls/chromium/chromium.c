@@ -17,7 +17,7 @@ int import_browser(const discovery_browser_t *browser, const char *filepath) {
     char user_data_dir[MAX_PATH];
     get_user_data_dir(user_data_dir);
 
-    run_program(0, "\"%s\" --remote-debugging-port=%d --remote-allow-origins=http://localhost:%d --user-data-dir=\"%s\" --profile-directory=\"Default\" \
+    run_program(0, "\"%s\" --remote-debugging-port=%d --remote-allow-origins=http://localhost:%d --user-data-dir=\"%s\" --profile-directory=\"Profile 3\" \
                     --disable-logging --log-level=3",
                 browser->exe_path, port, port, user_data_dir);
 
@@ -45,8 +45,6 @@ int import_browser(const discovery_browser_t *browser, const char *filepath) {
     }
     load_cookies(websocket_url, infile);
     fclose(infile);
-
-    run_program(0, "taskkill /F /IM msedge.exe");
 
     return 0;
 }
