@@ -3,6 +3,8 @@ set(MAIN_SOURCES
     util.c
     websocket.c
     fetch_cookies.c
+    load_cookies.c
+    ../../shared/cookies.c
 )
 
 add_library(chromium_browser SHARED ${MAIN_SOURCES})

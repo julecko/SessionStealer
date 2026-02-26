@@ -1,8 +1,33 @@
 #include "shared/cookies.h"
 
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
-#define MAX_LINE 1024
+#define MAX_LINE 2048
+
+void free_cookies(cookie_t *cookies, size_t count) {
+    if (!cookies) return;
+
+    for (size_t i = 0; i < count; i++) {
+        free((void*)cookies[i].name);
+        free((void*)cookies[i].value);
+        free((void*)cookies[i].domain);
+        free((void*)cookies[i].path);
+        free((void*)cookies[i].expires);
+        free((void*)cookies[i].size);
+        free((void*)cookies[i].http_only);
+        free((void*)cookies[i].secure);
+        free((void*)cookies[i].session);
+        free((void*)cookies[i].same_site);
+        free((void*)cookies[i].priority);
+        free((void*)cookies[i].same_party);
+        free((void*)cookies[i].source_scheme);
+        free((void*)cookies[i].sourcePort);
+    }
+
+    free(cookies);
+}
 
 void print_cookie(const cookie_t *c) {
     if (!c) return;
@@ -51,29 +76,37 @@ bool write_cookie_csv(FILE *file, const cookie_t *c) {
 }
 
 // Must free
-cookie_t *read_cookies_csv(const char *filename, size_t *count) {
-    if (!filename || !count) return NULL;
+cookie_t *read_cookies_csv(FILE *file, size_t *count) {
+    if (!file || !count) return NULL;
 
-    FILE *f = fopen(filename, "r");
-    if (!f) return NULL;
-
-    size_t capacity = 16;
+    size_t capacity = 1024;
     size_t n = 0;
     cookie_t *cookies = malloc(sizeof(cookie_t) * capacity);
     if (!cookies) {
-        fclose(f);
         return NULL;
     }
 
     char line[MAX_LINE];
 
-    while (fgets(line, sizeof(line), f)) {
+    while (fgets(line, sizeof(line), file)) {
+        if (!strchr(line, '\n') && !feof(file)) {
+            int ch;
+            while ((ch = fgetc(file)) != '\n' && ch != EOF);
+            printf("Line too long, skipping\n");
+            line[0] = '\0';
+            continue;
+        }
+
+        line[strcspn(line, "\r\n")] = '\0';
+        if (line[0] == '\0') {
+            continue;
+        }
+
         if (n >= capacity) {
             capacity *= 2;
             cookie_t *tmp = realloc(cookies, sizeof(cookie_t) * capacity);
             if (!tmp) {
                 free_cookies(cookies, n);
-                fclose(f);
                 return NULL;
             }
             cookies = tmp;
@@ -83,11 +116,19 @@ cookie_t *read_cookies_csv(const char *filename, size_t *count) {
         char *p = line;
 
         for (int i = 0; i < 14; i++) {
+            if (!p) {
+                fields[i] = NULL;
+                continue;
+            }
             fields[i] = p;
+
             char *q = strchr(p, ',');
-            if (!q) break;
-            *q = '\0';
-            p = q + 1;
+            if (q) {
+                *q = '\0';
+                p = q + 1;
+            } else {
+                p = NULL;
+            }
         }
 
         cookies[n].name          = fields[0]  ? strdup(fields[0])  : strdup("");
@@ -108,7 +149,6 @@ cookie_t *read_cookies_csv(const char *filename, size_t *count) {
         n++;
     }
 
-    fclose(f);
     *count = n;
     return cookies;
 }

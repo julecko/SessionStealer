@@ -6,7 +6,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#define CLI_DEFAULT_FILE "cookies.json"
+#define CLI_DEFAULT_FILE "cookies.csv"
 
 static void print_help(FILE *file) {
     fputs("SessionStealer usage: sessionstealer [command] <flags>\n", file);
@@ -17,7 +17,7 @@ static void print_help(FILE *file) {
     fputs("    -V/--version -> prints program version\n", file);
     fputs("    -h/--help -> showcase this help message\n", file);
     fputs("    -v/--verbose -> enable verbose output\n", file);
-    fputs("    -f/--file (default cookies.json) -> specify file used for cookie import/export\n", file);
+    fputs("    -f/--file (default cookies.csv) -> specify file used for cookie import/export\n", file);
     fputs("    -b/--browser -> selected browser, if not specify discover all possible and give options\n", file);
     fputs("Supported browsers:\n", file);
     fputs("    Edge\n", file);
@@ -25,8 +25,8 @@ static void print_help(FILE *file) {
     //fputs("    Firefox\n", file);
     fputs("Examples:\n", file);
     fputs("    sessionstealer export -v -> exports cookies from later dicovered and selected browser into default file with verbose output\n", file);
-    fputs("    sessionstealer import -f cookies.json -b edge -> import cookies from cookies.json into edge\n", file);
-    fputs("    sessionstealer export -f cookies.json -> export cookies from later discovered and selected browser into file cookies.js\n", file);
+    fputs("    sessionstealer import -f cookies.csv -b edge -> import cookies from cookies.csv into edge\n", file);
+    fputs("    sessionstealer export -f cookies.csv -> export cookies from later discovered and selected browser into file cookies.csv\n", file);
     fputs("    sessionstealer -h -> shows this help message\n", file);
     fputs("    sessionstealer -V -> prints version of this program\n", file);
 }

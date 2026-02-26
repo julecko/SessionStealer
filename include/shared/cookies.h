@@ -5,25 +5,27 @@
 #include <stdio.h>
 
 typedef struct cookie_t {
-    const char *name;
-    const char *value;
-    const char *domain;
-    const char *path;
-    const char *expires;
-    const char *size;
-    const char *http_only;
-    const char *secure;
-    const char *session;
-    const char *same_site;
-    const char *priority;
-    const char *same_party;
-    const char *source_scheme;
-    const char *sourcePort;
+    char *name;
+    char *value;
+    char *domain;
+    char *path;
+    char *expires;
+    char *size;
+    char *http_only;
+    char *secure;
+    char *session;
+    char *same_site;
+    char *priority;
+    char *same_party;
+    char *source_scheme;
+    char *sourcePort;
 } cookie_t;
 
+#include <stdio.h>
 
 void print_cookie(const cookie_t *cookie);
 bool write_cookie_csv(FILE *file, const cookie_t *cookie);
-cookie_t* read_cookies_csv(const char *filename, size_t *count);
+void free_cookies(cookie_t *cookies, size_t count);
+cookie_t* read_cookies_csv(FILE *file, size_t *count);
 
 #endif

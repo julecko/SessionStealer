@@ -3,7 +3,8 @@
 
 #include <windows.h>
 #include <winhttp.h>
+#include <stdio.h>
 
-void fetch_cookies(const char *ws_url);
+void fetch_cookies(const char *ws_url, const FILE *outfile);
 
 #endif

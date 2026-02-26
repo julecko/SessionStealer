@@ -25,12 +25,15 @@ ws.send(json.dumps({
 
 while True:
     response = json.loads(ws.recv())
-    print(response)
     if response.get("id") == msg_id:
         cookies = response["result"]["cookies"]
         break
 
+counter = 0
 for c in cookies:
     print(f"{c['domain']} | {c['name']} = {c['value']}")
+    counter += 1
+
+print(f"Collected {counter} cookies")
 
 ws.close()

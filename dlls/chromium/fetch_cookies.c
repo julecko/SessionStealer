@@ -85,12 +85,10 @@ static char *get_cookie(cookie_t *cookie, char *start_original) {
 
     const char *object_start = strstr(start_original, "{\"name");
     if (!object_start) {
-        printf("Object start not found\n");
         return NULL;
     }
     const char *cookie_end = find_object_end(object_start);
     if (!cookie_end) {
-        printf("Cookie end not found\n");
         return NULL;
     }
 
@@ -100,7 +98,6 @@ static char *get_cookie(cookie_t *cookie, char *start_original) {
                                         fields[i].key, &cursor);
 
         if (!result && fields[i].required) {
-            printf("%s is not present in cookie\n", fields[i].key);
             return NULL;
         }
 
@@ -110,8 +107,8 @@ static char *get_cookie(cookie_t *cookie, char *start_original) {
     return cookie_end + 1;
 }
 
-void fetch_cookies(const char *ws_url) {
-    printf("[DEBUG] Connecting to WebSocket: %s\n", ws_url);
+void fetch_cookies(const char *ws_url, const FILE *outfile) {
+    printf("Connecting to WebSocket: %s\n", ws_url);
 
     HINTERNET ws = connect_websocket(ws_url);
     if (!ws) {
@@ -119,7 +116,7 @@ void fetch_cookies(const char *ws_url) {
         return;
     }
 
-    printf("[DEBUG] WebSocket connected\n");
+    printf("WebSocket connected\n");
 
     int msg_id = 1;
     char msg[256];
@@ -127,10 +124,10 @@ void fetch_cookies(const char *ws_url) {
         "{\"id\":%d,\"method\":\"Network.getAllCookies\"}",
         msg_id);
 
-    printf("[DEBUG] Sending Network.getAllCookies (id=%d)\n", msg_id);
+    printf("Sending Network.getAllCookies (id=%d)\n", msg_id);
     ws_send(ws, msg);
 
-    printf("[DEBUG] Waiting for cookies response...\n");
+    printf("Waiting for cookies response...\n");
     
     char remaining_buffer[WEBSOCKET_RECV_MAX*2];
     size_t remaining_buffer_length = 0;
@@ -150,6 +147,7 @@ void fetch_cookies(const char *ws_url) {
         }
         
         memcpy(remaining_buffer + remaining_buffer_length, resp, resp_len);
+        free(resp);
         remaining_buffer_length += resp_len;
         remaining_buffer[remaining_buffer_length] = '\0';
 
@@ -165,7 +163,7 @@ void fetch_cookies(const char *ws_url) {
                 break;
             } else {
                 start = tmp;
-                printf("%s\n", cookie.name);
+                write_cookie_csv(outfile, &cookie);
             }
         }
 
@@ -175,15 +173,12 @@ void fetch_cookies(const char *ws_url) {
         remaining_buffer[remaining_buffer_length] = '\0';
 
         if (last_frame) {
-            printf("Last frame\n");
             break;
         }
     }
-    printf("%s\n", remaining_buffer);
-
-    printf("[DEBUG] Closing WebSocket\n");
+    printf("Closing WebSocket\n");
 
     close_websocket(ws);
 
-    printf("[DEBUG] WebSocket closed\n");
+    printf("WebSocket closed\n");
 }

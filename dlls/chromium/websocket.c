@@ -129,6 +129,7 @@ void ws_send(HINTERNET ws, const char *c) {
         (DWORD)strlen(c));
 }
 
+// Caller must free char **out
 bool ws_recv(HINTERNET ws, char **out, bool *frame_finished) {
     DWORD size = 0;
     DWORD type = 0;
