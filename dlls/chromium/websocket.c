@@ -1,7 +1,9 @@
+#include "dlls/chromium/websocket.h"
 #include <windows.h>
 #include <winhttp.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 // Must free result
 static wchar_t* utf8_to_wide(const char* str) {
@@ -127,33 +129,21 @@ void ws_send(HINTERNET ws, const char *c) {
         (DWORD)strlen(c));
 }
 
-char* ws_recv(HINTERNET ws) {
+bool ws_recv(HINTERNET ws, char **out, bool *frame_finished) {
     DWORD size = 0;
     DWORD type = 0;
-    char buffer[8192];
+    char buffer[WEBSOCKET_RECV_MAX];
 
-    DWORD result = WinHttpWebSocketReceive(
-        ws,
-        buffer,
-        sizeof(buffer) - 1,
-        &size,
-        &type);
+    DWORD result = WinHttpWebSocketReceive(ws, buffer, sizeof(buffer)-1, &size, &type);
 
-    if (result == ERROR_WINHTTP_TIMEOUT) {
-        return NULL;
-    }
-
-    if (result != NO_ERROR) {
-        printf("WebSocket receive failed: %lu\n", result);
-        return NULL;
-    }
-
-    if (type == WINHTTP_WEB_SOCKET_CLOSE_BUFFER_TYPE) {
-        return NULL;
-    }
+    if (result != NO_ERROR || result) return false;
 
     buffer[size] = 0;
-    return _strdup(buffer);
+    *out = _strdup(buffer);
+
+    *frame_finished = (type == WINHTTP_WEB_SOCKET_UTF8_MESSAGE_BUFFER_TYPE || type == WINHTTP_WEB_SOCKET_CLOSE_BUFFER_TYPE);
+
+    return true;
 }
 
 void close_websocket(HINTERNET ws) {

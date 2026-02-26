@@ -43,7 +43,7 @@ int export_browser(const discovery_browser_t *browser, const char *filepath) {
     printf("%s\n", websocket_url);
     fetch_cookies(websocket_url);
 
-    run_program(0, "taskkill /F /IM msedge.exe");
+    //run_program(0, "taskkill /F /IM msedge.exe");
 
     return 0;
 }

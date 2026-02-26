@@ -1,9 +1,114 @@
 #include "dlls/chromium/websocket.h"
+#include "shared/cookies.h"
 
 #include <windows.h>
 #include <winhttp.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+typedef struct {
+    const char *key;
+    const char **target;
+    bool required;
+} field_map_t;
+
+char *find_object_end(char* start) {
+    int braces = 0;
+    char* p = start;
+    while (*p) {
+        if (*p == '{') braces++;
+        else if (*p == '}') {
+            braces--;
+            if (braces == 0) return p;
+            if (braces < 0) {
+                printf("Braces cant be smaller than 0\n");
+                return NULL;
+            }
+        }
+        p++;
+    }
+    return NULL;
+}
+
+static char *extract_json_string(char *obj_start, char *obj_end, const char *key, char **next_search_start){
+    char pattern[64];
+
+    snprintf(pattern, sizeof(pattern), "\"%s\":", key);
+
+    char *start = strstr(obj_start, pattern);
+    if (!start || start > obj_end)
+        return NULL;
+
+    start += strlen(pattern);
+
+    while (*start == ' ' || *start == '\t')
+        start++;
+
+    if (*start == '"') {
+        start++;
+        char *end = strchr(start, '"');
+        if (!end || end > obj_end) return NULL;
+        *end = '\0';
+        if (next_search_start) *next_search_start = end + 1;
+        return start;
+    } else {
+        char *end = start;
+        while (end < obj_end &&
+            *end != ',' &&
+            *end != '}')
+            end++;
+
+        char saved = *end;
+        *end = '\0';
+        if (next_search_start) *next_search_start = end + 1;
+        return start;
+    }
+}
+
+static char *get_cookie(cookie_t *cookie, char *start_original) {
+    field_map_t fields[] = {
+        { "name",          &cookie->name, 1 },
+        { "value",         &cookie->value, 1 },
+        { "domain",        &cookie->domain, 1 },
+        { "path",          &cookie->path, 1 },
+        { "expires",       &cookie->expires, 1 },
+        { "size",          &cookie->size, 1 },
+        { "httpOnly",      &cookie->http_only, 1 },
+        { "secure",        &cookie->secure, 1 },
+        { "session",       &cookie->session, 1 },
+        { "sameSite",      &cookie->same_site, 0 },
+        { "priority",      &cookie->priority, 1 },
+        { "sameParty",     &cookie->same_party, 1 },
+        { "sourceScheme",  &cookie->source_scheme, 1 },
+        { "sourcePort",    &cookie->sourcePort, 1 },
+    };
+
+    const char *object_start = strstr(start_original, "{\"name");
+    if (!object_start) {
+        printf("Object start not found\n");
+        return NULL;
+    }
+    const char *cookie_end = find_object_end(object_start);
+    if (!cookie_end) {
+        printf("Cookie end not found\n");
+        return NULL;
+    }
+
+    char *cursor = start_original;
+    for (size_t i = 0; i < sizeof(fields)/sizeof(fields[0]); i++) {
+        char *result = extract_json_string(cursor, cookie_end,
+                                        fields[i].key, &cursor);
+
+        if (!result && fields[i].required) {
+            printf("%s is not present in cookie\n", fields[i].key);
+            return NULL;
+        }
+
+        *fields[i].target = result;
+    }
+
+    return cookie_end + 1;
+}
 
 void fetch_cookies(const char *ws_url) {
     printf("[DEBUG] Connecting to WebSocket: %s\n", ws_url);
@@ -26,81 +131,55 @@ void fetch_cookies(const char *ws_url) {
     ws_send(ws, msg);
 
     printf("[DEBUG] Waiting for cookies response...\n");
-
+    
+    char remaining_buffer[WEBSOCKET_RECV_MAX*2];
+    size_t remaining_buffer_length = 0;
+    const char *start;
+    const char *tmp;
+    char *resp;
     while (1) {
-        char *resp = ws_recv(ws);
-        if (!resp) {
-            printf("[ERROR] ws_recv returned NULL\n");
+        bool last_frame;
+        if (!ws_recv(ws, &resp, &last_frame)) {
+            printf("[ERROR] ws_recv failed\n");
             break;
         }
-
-        printf("[DEBUG] Received message:\n%s\n", resp);
-
-        /*cJSON *json = cJSON_Parse(resp);
-        free(resp);
-
-        if (!json) {
-            printf("[WARN] Failed to parse JSON message\n");
-            continue;
-        }
-
-        //cJSON *id = cJSON_GetObjectItem(json, "id");
-
-        // Ignore unrelated CDP events
-        if (!id) {
-            printf("[DEBUG] Ignoring event (no id field)\n");
-            cJSON_Delete(json);
-            continue;
-        }
-
-        printf("[DEBUG] Message id=%d\n", id->valueint);
-
-        if (id->valueint == msg_id) {
-            printf("[DEBUG] Matched cookie response\n");
-
-            cJSON *result = cJSON_GetObjectItem(json, "result");
-            if (!result) {
-                printf("[ERROR] No 'result' field in response\n");
-                cJSON_Delete(json);
-                break;
-            }
-
-            cJSON *cookies = cJSON_GetObjectItem(result, "cookies");
-            if (!cookies || !cJSON_IsArray(cookies)) {
-                printf("[ERROR] No 'cookies' array found\n");
-                cJSON_Delete(json);
-                break;
-            }
-
-            int count = cJSON_GetArraySize(cookies);
-            printf("[DEBUG] Cookie count: %d\n", count);
-
-            for (int i = 0; i < count; i++) {
-                cJSON *c = cJSON_GetArrayItem(cookies, i);
-                if (!c) continue;
-
-                cJSON *domain = cJSON_GetObjectItem(c, "domain");
-                cJSON *name   = cJSON_GetObjectItem(c, "name");
-                cJSON *value  = cJSON_GetObjectItem(c, "value");
-
-                if (domain && name && value &&
-                    cJSON_IsString(domain) &&
-                    cJSON_IsString(name) &&
-                    cJSON_IsString(value)) {
-
-                    printf("%s | %s = %s\n",
-                        domain->valuestring,
-                        name->valuestring,
-                        value->valuestring);
-                }
-            }
-
-            cJSON_Delete(json);
+        size_t resp_len = strlen(resp);
+        if (remaining_buffer_length + resp_len >= WEBSOCKET_RECV_MAX*2) {
+            printf("[ERROR] Buffer overflow\n");
             break;
         }
+        
+        memcpy(remaining_buffer + remaining_buffer_length, resp, resp_len);
+        remaining_buffer_length += resp_len;
+        remaining_buffer[remaining_buffer_length] = '\0';
 
-        cJSON_Delete(json);*/
+        start = strchr(remaining_buffer, '{');
+        if (!start) {
+            printf("Starting { not found\n");
+            return;
+        }
+        while (true) {
+            cookie_t cookie = {0};
+            tmp = get_cookie(&cookie, start);
+            if (!tmp) {
+                break;
+            } else {
+                start = tmp;
+                printf("%s\n", cookie.name);
+            }
+        }
+
+        size_t remaining = remaining_buffer + remaining_buffer_length - start;
+        memmove(remaining_buffer, start, remaining);
+        remaining_buffer_length = remaining;
+        remaining_buffer[remaining_buffer_length] = '\0';
+
+        if (last_frame) {
+            printf("Last frame\n");
+            break;
+        }
     }
+    printf("%s\n", remaining_buffer);
 
     printf("[DEBUG] Closing WebSocket\n");
 

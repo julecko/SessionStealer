@@ -9,16 +9,16 @@ typedef struct cookie_t {
     const char *value;
     const char *domain;
     const char *path;
-    double expires;
+    const char *expires;
     const char *size;
-    bool http_only;
-    bool secure;
-    bool session;
+    const char *http_only;
+    const char *secure;
+    const char *session;
     const char *same_site;
     const char *priority;
-    bool same_party;
+    const char *same_party;
     const char *source_scheme;
-    unsigned int sourcePort;
+    const char *sourcePort;
 } cookie_t;
 
 
