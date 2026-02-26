@@ -41,27 +41,42 @@ discovery_browser_t *pick_browser(discovery_browser_list_t *discovered_browsers,
     } else {
         printf("Discovered browsers:\n");
         for (size_t i = 0; i < discovered_browsers->length; i++) {
-            discovery_browser_t *discovered_browser = &discovered_browsers->browsers[i];
+            const discovery_browser_t *discovered_browser = &discovered_browsers->browsers[i];
             const char *browser_name = enum_browser_to_char(discovered_browser->browser_name);
-            printf("    %d. %s\n", i+1, browser_name);
+            printf("    %zu. %s\n", i+1, browser_name);
         }
         size_t input;
         while (true) {
             printf("Select browser number: ");
-            if (scanf("%zu", &input) != 1) {
-                printf("Invalid input! Enter number\n");
 
-                int c;
-                while ((c = getchar()) != '\n' && c != EOF);
-
+            char buffer[64];
+            if (!fgets(buffer, sizeof(buffer), stdin)) {
+                printf("Input error.\n");
                 continue;
-            } else {
-                if (input >= 1 && input <= discovered_browsers->length) {
-                    break;
-                } else {
-                    printf("Select in range %zu-%zu\n", 1, discovered_browsers->length);
-                }
             }
+
+            buffer[strcspn(buffer, "\n")] = '\0';
+
+            if (buffer[0] == '\0') {
+                printf("Invalid input! Enter number\n");
+                continue;
+            }
+
+            char *endptr;
+            unsigned long value = strtoul(buffer, &endptr, 10);
+
+            if (*endptr != '\0') {
+                printf("Invalid input! Enter number\n");
+                continue;
+            }
+
+            input = (size_t)value;
+
+            if (input >= 1 && input <= discovered_browsers->length) {
+                break;
+            }
+
+            printf("Select in range %zu-%zu\n", (size_t)1, discovered_browsers->length);
         }
         input--;
         return &discovered_browsers->browsers[input];

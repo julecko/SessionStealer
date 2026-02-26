@@ -5,8 +5,8 @@
 #include <stdio.h>
 
 const char *browser_map_dll[] = {
-    [DISCOVERY_CHROME]  = "chrome_browser.dll",
-    [DISCOVERY_EDGE]    = "edge_browser.dll",
+    [DISCOVERY_CHROME]  = "chromium_browser.dll",
+    [DISCOVERY_EDGE]    = "chromium_browser.dll",
     [DISCOVERY_FIREFOX] = "firefox_browser.dll"
 };
 
