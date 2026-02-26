@@ -53,7 +53,8 @@ int main(int argc, char *argv[]) {
     
     HMODULE hBrowserLib = LoadLibraryA(selected_browser_dll_name);
     if (!hBrowserLib) {
-        printf("Couldnt load %s\n", selected_browser_dll_name);
+        DWORD err = GetLastError();
+        printf("Couldn't load %s. Error code: %lu\n", selected_browser_dll_name, err);
         return EXIT_FAILURE;
     }
     

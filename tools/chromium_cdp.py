@@ -16,12 +16,6 @@ print("Connecting to:", ws_url)
 ws = websocket.create_connection(ws_url)
 
 msg_id = 1
-ws.send(json.dumps({
-    "id": msg_id,
-    "method": "Network.enable"
-}))
-
-ws.recv()
 
 msg_id += 1
 ws.send(json.dumps({
@@ -31,6 +25,7 @@ ws.send(json.dumps({
 
 while True:
     response = json.loads(ws.recv())
+    print(response)
     if response.get("id") == msg_id:
         cookies = response["result"]["cookies"]
         break

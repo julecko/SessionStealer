@@ -1,5 +1,8 @@
 set(MAIN_SOURCES
     chromium.c
+    util.c
+    websocket.c
+    fetch_cookies.c
 )
 
 add_library(chromium_browser SHARED ${MAIN_SOURCES})
@@ -10,8 +13,10 @@ set_target_properties(chromium_browser PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
-find_package(libwebsockets CONFIG REQUIRED)
-target_link_libraries(chromium_browser PRIVATE websockets_shared)
+target_link_libraries(chromium_browser
+    PRIVATE
+        winhttp
+)
 
 target_compile_definitions(chromium_browser PRIVATE
     $<$<CONFIG:Debug>:DEBUG_MODE=1>
