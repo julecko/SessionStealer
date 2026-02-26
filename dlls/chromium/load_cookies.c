@@ -5,6 +5,38 @@
 #include <windows.h>
 #include <winhttp.h>
 
+char* json_escape(const char *input) {
+    if (!input) return strdup("");
+
+    size_t len = strlen(input);
+    size_t max_len = len * 6 + 1;
+    char *out = malloc(max_len);
+    if (!out) return NULL;
+
+    char *p = out;
+    for (size_t i = 0; i < len; i++) {
+        unsigned char c = input[i];
+        switch (c) {
+            case '"':  *p++ = '\\'; *p++ = '"';  break;
+            case '\\': *p++ = '\\'; *p++ = '\\'; break;
+            case '\b': *p++ = '\\'; *p++ = 'b';  break;
+            case '\f': *p++ = '\\'; *p++ = 'f';  break;
+            case '\n': *p++ = '\\'; *p++ = 'n';  break;
+            case '\r': *p++ = '\\'; *p++ = 'r';  break;
+            case '\t': *p++ = '\\'; *p++ = 't';  break;
+            default:
+                if (c <= 0x1F) {
+                    p += sprintf(p, "\\u%04x", c);
+                } else {
+                    *p++ = c;
+                }
+                break;
+        }
+    }
+    *p = '\0';
+    return out;
+}
+
 void load_cookies(const char *ws_url, const FILE *infile) {
     if (!ws_url || !infile) {
         printf("Load cookies: invalid arguments\n");
@@ -68,6 +100,14 @@ void load_cookies(const char *ws_url, const FILE *infile) {
         const char *http_only =
             (c->http_only && strcmp(c->http_only, "true") == 0) ? "true" : "false";
 
+        char *name  = json_escape(c->name);
+        char *value = json_escape(c->value);
+        char *domain = json_escape(c->domain);
+        char *path  = json_escape(c->path);
+        char *same_site = json_escape(
+            (c->same_site && strlen(c->same_site)) ? c->same_site : "Lax"
+        );
+
         offset += snprintf(json + offset, buffer_size - offset,
             "{"
             "\"name\":\"%s\","
@@ -79,15 +119,21 @@ void load_cookies(const char *ws_url, const FILE *infile) {
             "\"httpOnly\":%s,"
             "\"sameSite\":\"%s\""
             "}",
-            c->name,
-            c->value,
-            c->domain,
-            c->path,
+            name,
+            value,
+            domain,
+            path,
             expires,
             secure,
             http_only,
-            (c->same_site && strlen(c->same_site)) ? c->same_site : "Lax"
+            same_site
         );
+
+        free(name);
+        free(value);
+        free(domain);
+        free(path);
+        free(same_site);
 
         written++;
     }
@@ -95,6 +141,10 @@ void load_cookies(const char *ws_url, const FILE *infile) {
     offset += snprintf(json + offset, buffer_size - offset,
         "]}}"
     );
+
+    FILE *f = fopen("random.json", "w");
+    fprintf(f, "%s", json);
+    fclose(f);
 
     ws_send(ws, json);
 
