@@ -132,6 +132,10 @@ void load_cookies(const char *ws_url, const FILE *infile) {
         written++;
     }
 
+    snprintf(json + offset, buffer_size - offset,
+        "]}}"
+    );
+
     ws_send(ws, json);
 
     ws_send(ws, "{\"id\":3,\"method\":\"Page.reload\"}");

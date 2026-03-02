@@ -16,7 +16,7 @@ bool discover_firefox(discovery_browser_t *browser) {
     const char exe_path[MAX_PATH];
 
     bool result = query_reg_path(FIREFOX_PATH_REG, exe_path, sizeof(exe_path));
-    if (!result && file_exists(exe_path)) {
+    if (result && file_exists(exe_path)) {
         strncpy(browser->exe_path, exe_path, MAX_PATH - 1);
         browser->exe_path[MAX_PATH - 1] = '\0';
         return true;

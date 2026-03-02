@@ -36,10 +36,6 @@ int main(int argc, char *argv[]) {
     discovery_browser_list_t discovered_browsers = discover_browsers_dll();
     FreeLibrary(hLib);
 
-    if (discovered_browsers.length < 1) {
-        printf("No browsers discovered\n");
-    }
-
     discovery_browser_t *selected_browser = pick_browser(&discovered_browsers, args.browser);
     if (selected_browser == NULL) {
         return EXIT_FAILURE;
