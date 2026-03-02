@@ -37,10 +37,11 @@ run_cppcheck() {
         --std=c11 \
         --std=c++23 \
         --quiet \
+        --check-level=exhaustive \
         --suppress=missingIncludeSystem \
         -I"$(pwd)/include" \
         "$(pwd)/src" \
-        "$(pwd)/dlls
+        "$(pwd)/dlls"
 
     local CPPCHECK_EXIT=$?
     echo "Cppcheck finished with exit code $CPPCHECK_EXIT"

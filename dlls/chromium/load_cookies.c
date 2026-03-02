@@ -5,7 +5,7 @@
 #include <windows.h>
 #include <winhttp.h>
 
-char* json_escape(const char *input) {
+static char *json_escape(const char *input) {
     if (!input) return strdup("");
 
     size_t len = strlen(input);
@@ -82,23 +82,13 @@ void load_cookies(const char *ws_url, const FILE *infile) {
     size_t written = 0;
 
     for (size_t i = 0; i < count; i++) {
-        cookie_t *c = &cookies[i];
+        const cookie_t *c = &cookies[i];
 
         if (!c->name || !c->value || !c->domain || !c->path)
             continue;
 
         if (written > 0)
             offset += snprintf(json + offset, buffer_size - offset, ",");
-
-        double expires = 0.0;
-        if (c->expires && strlen(c->expires))
-            expires = atof(c->expires);
-
-        const char *secure =
-            (c->secure && strcmp(c->secure, "true") == 0) ? "true" : "false";
-
-        const char *http_only =
-            (c->http_only && strcmp(c->http_only, "true") == 0) ? "true" : "false";
 
         char *name  = json_escape(c->name);
         char *value = json_escape(c->value);
@@ -108,13 +98,17 @@ void load_cookies(const char *ws_url, const FILE *infile) {
             (c->same_site && strlen(c->same_site)) ? c->same_site : "Lax"
         );
 
+        const char *expires = (c->expires && strlen(c->expires)) ? c->expires : "0";
+        const char *secure = (c->secure && strlen(c->secure)) ? c->secure : "false";
+        const char *http_only = (c->http_only && strlen(c->http_only)) ? c->http_only : "false";
+
         offset += snprintf(json + offset, buffer_size - offset,
             "{"
             "\"name\":\"%s\","
             "\"value\":\"%s\","
             "\"domain\":\"%s\","
             "\"path\":\"%s\","
-            "\"expires\":%f,"
+            "\"expires\":%s,"
             "\"secure\":%s,"
             "\"httpOnly\":%s,"
             "\"sameSite\":\"%s\""
@@ -138,10 +132,6 @@ void load_cookies(const char *ws_url, const FILE *infile) {
         written++;
     }
 
-    offset += snprintf(json + offset, buffer_size - offset,
-        "]}}"
-    );
-
     ws_send(ws, json);
 
     ws_send(ws, "{\"id\":3,\"method\":\"Page.reload\"}");
@@ -150,5 +140,5 @@ void load_cookies(const char *ws_url, const FILE *infile) {
     close_websocket(ws);
     free_cookies(cookies, count);
 
-    printf("Cookies (%d) loaded into browser\n", count);
+    printf("Cookies (%zu) loaded into browser\n", count);
 }

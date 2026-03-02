@@ -127,6 +127,7 @@ echo Running Cppcheck static analysis only...
     --std=c++23 ^
     --quiet ^
     --suppress=missingIncludeSystem ^
+    --check-level=exhaustive ^
     -I"%CD%\include" ^
     -I"%CD%\include\dlls" ^
     "%CD%\src" ^

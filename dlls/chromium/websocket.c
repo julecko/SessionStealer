@@ -56,11 +56,16 @@ HINTERNET connect_websocket(const char* ws_url) {
             0,
             (LPSTR)&msg,
             0,
-            NULL);
+            NULL
+        );
 
-        printf("WinHttpCrackUrl failed. Error %lu: %s\n", err, msg);
+        // cppcheck-suppress knownConditionTrueFalse
+        printf("WinHttpCrackUrl failed. Error %lu: %s\n", err, msg ? msg : "Unknown error");
 
-        LocalFree(msg);
+        // cppcheck-suppress knownConditionTrueFalse
+        if (msg) {
+            LocalFree(msg);
+        }
         return NULL;
     }
 

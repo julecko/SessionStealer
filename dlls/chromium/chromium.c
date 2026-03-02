@@ -79,6 +79,10 @@ int export_browser(const discovery_browser_t *browser, const char *filepath) {
     printf("%s\n", websocket_url);
 
     FILE *outfile = fopen(filepath, "w");
+    if (!outfile) {
+        fprintf(stderr, "Couldnt open %s for writing\n", filepath);
+        return 1;
+    }
     fetch_cookies(websocket_url, outfile);
     fclose(outfile);
 

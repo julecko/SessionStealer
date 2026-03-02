@@ -12,7 +12,7 @@ typedef struct {
     bool required;
 } field_map_t;
 
-char *find_object_end(char* start) {
+static char *find_object_end(char* start) {
     int braces = 0;
     char* p = start;
     while (*p) {
@@ -58,7 +58,6 @@ static char *extract_json_string(char *obj_start, char *obj_end, const char *key
             *end != '}')
             end++;
 
-        char saved = *end;
         *end = '\0';
         if (next_search_start) *next_search_start = end + 1;
         return start;
@@ -94,7 +93,7 @@ static char *get_cookie(cookie_t *cookie, char *start_original) {
 
     char *cursor = start_original;
     for (size_t i = 0; i < sizeof(fields)/sizeof(fields[0]); i++) {
-        char *result = extract_json_string(cursor, cookie_end,
+        const char *result = extract_json_string(cursor, cookie_end,
                                         fields[i].key, &cursor);
 
         if (!result && fields[i].required) {

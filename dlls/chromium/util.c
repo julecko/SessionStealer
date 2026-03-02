@@ -158,15 +158,16 @@ bool extract_ws_url(char *buffer, size_t buffer_len, const char *json_text) {
         return false;
     }
 
-    char *start_ws = strstr(start_json_field, start_ws_string);
+    const char *start_ws = strstr(start_json_field, start_ws_string);
     if (!start_ws) {
         printf("%s not found\n", start_ws_string);
         return false;
     }
 
-    char *end = strchr(start_ws, end_char);
+    const char *end = strchr(start_ws, end_char);
     if (!end) {
         printf("Ending %c not found\n", end_char);
+        return false;
     }
 
     size_t length = end - start_ws;

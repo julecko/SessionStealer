@@ -18,7 +18,7 @@ discovery_browser_list_t discover_browsers(void) {
 
     size_t table_size = sizeof(browser_discover_table) / sizeof(browser_discover_table[0]);
     for (size_t i = 0; i < table_size; i++) {
-        discovery_browser_t browser;
+        discovery_browser_t browser = {0};
         if (browser_discover_table[i](&browser)) {
             if (browsers_list.length < DISCOVERY_BROWSER_COUNT) {
                 browsers_list.browsers[browsers_list.length++] = browser;
