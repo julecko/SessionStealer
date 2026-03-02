@@ -1,34 +1,37 @@
 set(MAIN_SOURCES
-    discovery.c
-    utils.c
-    edge.c
     firefox.c
+    ../../shared/cookies.c
 )
 
-add_library(discovery SHARED ${MAIN_SOURCES})
+add_library(firefox_browser SHARED ${MAIN_SOURCES})
 
-set_target_properties(discovery PROPERTIES
+set_target_properties(firefox_browser PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
-target_compile_definitions(discovery PRIVATE
+
+target_link_libraries(firefox_browser
+    PRIVATE SQLite::SQLite3
+)
+
+target_compile_definitions(firefox_browser PRIVATE
     $<$<CONFIG:Debug>:DEBUG_MODE=1>
     $<$<CONFIG:Release>:NDEBUG>
 )
 
 if (MSVC)
-    target_compile_options(discovery PRIVATE
+    target_compile_options(firefox_browser PRIVATE
         $<$<CONFIG:Debug>:${GLOBAL_DEBUG_FLAGS}>
         $<$<CONFIG:Release>:${GLOBAL_RELEASE_FLAGS}>
     )
-    target_link_options(discovery PRIVATE
+    target_link_options(firefox_browser PRIVATE
         $<$<CONFIG:Debug>:/DEBUG>
     )
-    target_compile_definitions(discovery PRIVATE DISCOVERY_EXPORTS)
+    target_compile_definitions(firefox_browser PRIVATE firefox_EXPORTS)
 else()
-    target_compile_options(discovery PRIVATE
+    target_compile_options(firefox_browser PRIVATE
         $<$<CONFIG:Debug>:${GLOBAL_DEBUG_FLAGS}>
         $<$<CONFIG:Release>:${GLOBAL_RELEASE_FLAGS}>
     )

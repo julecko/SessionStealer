@@ -60,6 +60,11 @@ int main(int argc, char *argv[]) {
     
     const char *func_name = args.command == CLI_COMMAND_EXPORT ? "export_browser" : "import_browser";
     browser_dll_fn browser_command = (browser_dll_fn)GetProcAddress(hBrowserLib, func_name);
+    if (!browser_command) {
+        DWORD err = GetLastError();
+        printf("Couldn't load func %s. Error code: %lu\n", func_name, err);
+        return EXIT_FAILURE;
+    }
 
     int result = browser_command(selected_browser, args.file);
 

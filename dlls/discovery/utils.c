@@ -1,14 +1,45 @@
 #include <windows.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
-int file_exists(const char* path) {
+bool file_exists(const char* path) {
     DWORD attr = GetFileAttributesA(path);
     if (attr == INVALID_FILE_ATTRIBUTES)
-        return 0;
+        return false;
     if (attr & FILE_ATTRIBUTE_DIRECTORY)
-        return 0;
-    return 1;
+        return false;
+    return true;
+}
+
+bool query_reg_path(const char *reg_path, char *outbuffer, DWORD outbuffer_size) {
+    HKEY hKey;
+
+    LONG result = RegOpenKeyExA(
+        HKEY_LOCAL_MACHINE,
+        reg_path,
+        0,
+        KEY_READ,
+        &hKey
+    );
+
+    if (result != ERROR_SUCCESS) {
+        return false;
+    }
+
+    DWORD size = outbuffer_size;
+    result = RegQueryValueExA(
+        hKey,
+        NULL,
+        NULL,
+        NULL,
+        (LPBYTE)outbuffer,
+        &size
+    );
+
+    RegCloseKey(hKey);
+
+    return result == ERROR_SUCCESS;
 }
 
 /*const char *get_home_folder() {

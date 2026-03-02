@@ -1,0 +1,5 @@
+#ifndef DLLS_FIREFOX_FIREFOX_H
+#define DLLS_FIREFOX_FIREFOX_H
+
+
+#endif
