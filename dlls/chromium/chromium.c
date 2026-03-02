@@ -3,6 +3,7 @@
 #include "dlls/discovery/discovery.h"
 #include "chromium/fetch_cookies.h"
 #include "chromium/load_cookies.h"
+#include "shared/util.h"
 
 #include <stdio.h>
 #include <stdbool.h>

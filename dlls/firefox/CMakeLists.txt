@@ -29,7 +29,7 @@ if (MSVC)
     target_link_options(firefox_browser PRIVATE
         $<$<CONFIG:Debug>:/DEBUG>
     )
-    target_compile_definitions(firefox_browser PRIVATE firefox_EXPORTS)
+    target_compile_definitions(firefox_browser PRIVATE FIREFOX_EXPORTS)
 else()
     target_compile_options(firefox_browser PRIVATE
         $<$<CONFIG:Debug>:${GLOBAL_DEBUG_FLAGS}>

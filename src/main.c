@@ -10,6 +10,7 @@
 #include <stdbool.h>
 #include <windows.h>
 
+typedef int (*browser_dll_fn)(const discovery_browser_t *browser, const char *filepath);
 
 int main(int argc, char *argv[]) {
     cli_args_t args = create_cli_args();

@@ -13,8 +13,6 @@
     #define CHROMIUM_API
 #endif
 
-typedef int (*browser_dll_fn)(const discovery_browser_t *browser, const char *filepath);
-
 CHROMIUM_API int import_browser(const discovery_browser_t *browser, const char *filepath);
 CHROMIUM_API int export_browser(const discovery_browser_t *browser, const char *filepath);
 

@@ -175,6 +175,7 @@ void fetch_cookies(const char *ws_url, const FILE *outfile) {
             break;
         }
     }
+    printf("Cookies gathered successfully\n");
     printf("Closing WebSocket\n");
 
     close_websocket(ws);
