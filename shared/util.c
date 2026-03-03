@@ -73,9 +73,3 @@ int run_program(DWORD wait_seconds, const char *fmt, ...) {
     printf("Running program: %s\n", cmdline);
     return run_command(cmdline, wait_seconds);
 }
-
-int get_user_data_dir(char *user_data_dir) {
-    char localappdata[MAX_PATH];
-    GetEnvironmentVariableA("LOCALAPPDATA", localappdata, MAX_PATH);
-    return sprintf(user_data_dir, "%s\\Microsoft\\Edge\\User Data", localappdata);
-}

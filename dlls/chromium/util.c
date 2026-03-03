@@ -109,3 +109,9 @@ bool extract_ws_url(char *buffer, size_t buffer_len, const char *json_text) {
     
     return true;
 }
+
+int get_user_data_dir(char *user_data_dir) {
+    char localappdata[MAX_PATH];
+    GetEnvironmentVariableA("LOCALAPPDATA", localappdata, MAX_PATH);
+    return sprintf(user_data_dir, "%s\\Microsoft\\Edge\\User Data", localappdata);
+}
