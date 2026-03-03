@@ -1,10 +1,12 @@
 #include "dlls/chromium/load_cookies.h"
 #include "dlls/chromium/websocket.h"
 #include "shared/cookies.h"
+#include "shared/cookie_utils.h"
 
 #include <windows.h>
 #include <winhttp.h>
 
+// Caller must free
 static char *json_escape(const char *input) {
     if (!input) return strdup("");
 
@@ -90,17 +92,31 @@ void load_cookies(const char *ws_url, const FILE *infile) {
         if (written > 0)
             offset += snprintf(json + offset, buffer_size - offset, ",");
 
-        char *name  = json_escape(c->name);
+        char *name = json_escape(c->name);
         char *value = json_escape(c->value);
         char *domain = json_escape(c->domain);
-        char *path  = json_escape(c->path);
-        char *same_site = json_escape(
-            (c->same_site && strlen(c->same_site)) ? c->same_site : "Lax"
-        );
+        char *path = json_escape(c->path);
 
-        const char *expires = (c->expires && strlen(c->expires)) ? c->expires : "0";
-        const char *secure = (c->secure && strlen(c->secure)) ? c->secure : "false";
-        const char *http_only = (c->http_only && strlen(c->http_only)) ? c->http_only : "false";
+        const char *same_site_str = "Lax";
+        switch (c->same_site) {
+            case COOKIE_SAMESITE_NONE:   same_site_str = "None"; break;
+            case COOKIE_SAMESITE_LAX:    same_site_str = "Lax"; break;
+            case COOKIE_SAMESITE_STRICT: same_site_str = "Strict"; break;
+        }
+
+        const char *priority_str = "Medium";
+        switch (c->browser.chromium.priority) {
+            case COOKIE_PRIORITY_LOW:    priority_str = "Low"; break;
+            case COOKIE_PRIORITY_MEDIUM: priority_str = "Medium"; break;
+            case COOKIE_PRIORITY_HIGH:   priority_str = "High"; break;
+        }
+
+        uint64_t expires = 0;
+        if (c->browser_type == BROWSER_FIREFOX) {
+            expires = expires_firefox_to_chromium(c->expires);
+        } else if (c->browser_type == BROWSER_CHROMIUM) {
+            expires = c->expires;
+        }
 
         offset += snprintf(json + offset, buffer_size - offset,
             "{"
@@ -108,26 +124,27 @@ void load_cookies(const char *ws_url, const FILE *infile) {
             "\"value\":\"%s\","
             "\"domain\":\"%s\","
             "\"path\":\"%s\","
-            "\"expires\":%s,"
+            "\"expires\":%lld,"
             "\"secure\":%s,"
             "\"httpOnly\":%s,"
-            "\"sameSite\":\"%s\""
+            "\"sameSite\":\"%s\","
+            "\"priority\":\"%s\""
             "}",
             name,
             value,
             domain,
             path,
             expires,
-            secure,
-            http_only,
-            same_site
+            c->secure ? "true" : "false",
+            c->http_only ? "true" : "false",
+            same_site_str,
+            priority_str
         );
 
         free(name);
         free(value);
         free(domain);
         free(path);
-        free(same_site);
 
         written++;
     }

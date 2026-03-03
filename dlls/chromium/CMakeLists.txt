@@ -6,6 +6,7 @@ set(MAIN_SOURCES
     load_cookies.c
     ../../shared/cookies.c
     ../../shared/util.c
+    ../../shared/cookie_utils.c
 )
 
 add_library(chromium_browser SHARED ${MAIN_SOURCES})

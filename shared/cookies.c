@@ -1,150 +1,169 @@
 #include "shared/cookies.h"
 
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define MAX_LINE 2048
+#define COOKIE_HEADER "browser_type,name,value,domain,path,expires,http_only,secure,session," \
+                      "same_site,priority,same_party,source_scheme,sourcePort,creation_time,last_accessed,originAttributes"
+
+bool init_cookie_csv(FILE *file) {
+    if (!file) return false;
+    return fprintf(file, "%s\n", COOKIE_HEADER) > 0;
+}
+
+void free_cookie(cookie_t *cookie) {
+    free(cookie->name);
+    free(cookie->value);
+    free(cookie->domain);
+    free(cookie->path);
+    if (cookie->browser_type == BROWSER_FIREFOX) {
+        free(cookie->browser.firefox.originAttributes);
+    }
+}
 
 void free_cookies(cookie_t *cookies, size_t count) {
     if (!cookies) return;
 
     for (size_t i = 0; i < count; i++) {
-        free((void*)cookies[i].name);
-        free((void*)cookies[i].value);
-        free((void*)cookies[i].domain);
-        free((void*)cookies[i].path);
-        free((void*)cookies[i].expires);
-        free((void*)cookies[i].size);
-        free((void*)cookies[i].http_only);
-        free((void*)cookies[i].secure);
-        free((void*)cookies[i].session);
-        free((void*)cookies[i].same_site);
-        free((void*)cookies[i].priority);
-        free((void*)cookies[i].same_party);
-        free((void*)cookies[i].source_scheme);
-        free((void*)cookies[i].sourcePort);
+        free_cookie(&cookies[i]);
     }
-
     free(cookies);
 }
 
 void print_cookie(const cookie_t *c) {
     if (!c) return;
 
-    printf(
-        "name=%s value=%s domain=%s path=%s expires=%s size=%s "
-        "http_only=%s secure=%s session=%s same_site=%s priority=%s same_party=%s "
-        "source_scheme=%s sourcePort=%s\n",
-        c->name ? c->name : "",
-        c->value ? c->value : "",
-        c->domain ? c->domain : "",
-        c->path ? c->path : "",
-        c->expires ? c->expires : "",
-        c->size ? c->size : "",
-        c->http_only ? c->http_only : "",
-        c->secure ? c->secure : "",
-        c->session ? c->session : "",
-        c->same_site ? c->same_site : "",
-        c->priority ? c->priority : "",
-        c->same_party ? c->same_party : "",
-        c->source_scheme ? c->source_scheme : "",
-        c->sourcePort ? c->sourcePort : ""
-    );
+    if (c->browser_type == BROWSER_CHROMIUM) {
+        printf(
+            "Chromium: name=%s value=%s domain=%s path=%s expires=%lld "
+            "http_only=%d secure=%d session=%d same_site=%d priority=%d same_party=%d "
+            "source_scheme=%d sourcePort=%d\n",
+            c->name, c->value, c->domain, c->path, (long long)c->expires,
+            c->http_only, c->secure, c->session, c->same_site,
+            c->browser.chromium.priority,
+            c->browser.chromium.same_party,
+            c->source_scheme,
+            c->browser.chromium.source_port
+        );
+    } else {
+        printf(
+            "Firefox: name=%s value=%s domain=%s path=%s expires=%lld "
+            "http_only=%d secure=%d session=%d same_site=%d "
+            "creation_time=%lld last_accessed=%lld originAttributes=%s\n",
+            c->name, c->value, c->domain, c->path, (long long)c->expires,
+            c->http_only, c->secure, c->session, c->same_site,
+            (long long)c->browser.firefox.creation_time,
+            (long long)c->browser.firefox.last_accessed,
+            c->browser.firefox.originAttributes ? c->browser.firefox.originAttributes : ""
+        );
+    }
 }
 
 bool write_cookie_csv(FILE *file, const cookie_t *c) {
     if (!file || !c) return false;
 
-    return fprintf(file,
-        "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s\n",
-        c->name ? c->name : "",
-        c->value ? c->value : "",
-        c->domain ? c->domain : "",
-        c->path ? c->path : "",
-        c->expires ? c->expires : "",
-        c->size ? c->size : "",
-        c->http_only ? c->http_only : "",
-        c->secure ? c->secure : "",
-        c->session ? c->session : "",
-        c->same_site ? c->same_site : "",
-        c->priority ? c->priority : "",
-        c->same_party ? c->same_party : "",
-        c->source_scheme ? c->source_scheme : "",
-        c->sourcePort ? c->sourcePort : ""
-    ) > 0;
+    if (c->browser_type == BROWSER_CHROMIUM) {
+        return fprintf(file,
+            "%d,%s,%s,%s,%s,%lld,%d,%d,%d,%d,%d,%d,%d,%d,,,\n",
+            c->browser_type,
+            c->name ? c->name : "",
+            c->value ? c->value : "",
+            c->domain ? c->domain : "",
+            c->path ? c->path : "",
+            (long long)c->expires,
+            c->http_only,
+            c->secure,
+            c->session,
+            c->same_site,
+            c->browser.chromium.priority,
+            c->browser.chromium.same_party,
+            c->source_scheme,
+            c->browser.chromium.source_port
+        ) > 0;
+    } else if (c->browser_type == BROWSER_FIREFOX) { // Firefox
+        return fprintf(file,
+            "%d,%s,%s,%s,%s,%lld,%d,%d,%d,%d,,,,,%lld,%lld,%s\n",
+            c->browser_type,
+            c->name ? c->name : "",
+            c->value ? c->value : "",
+            c->domain ? c->domain : "",
+            c->path ? c->path : "",
+            (long long)c->expires,
+            c->http_only,
+            c->secure,
+            c->session,
+            c->same_site,
+            (long long)c->browser.firefox.creation_time,
+            (long long)c->browser.firefox.last_accessed,
+            c->browser.firefox.originAttributes ? c->browser.firefox.originAttributes : ""
+        ) > 0;
+    }
 }
 
-// Must free
 cookie_t *read_cookies_csv(FILE *file, size_t *count) {
     if (!file || !count) return NULL;
+
+    char line[MAX_LINE];
+
+    if (!fgets(line, sizeof(line), file)) return NULL;
+    line[strcspn(line, "\r\n")] = '\0';
+    if (strcmp(line, COOKIE_HEADER) != 0) {
+        printf("Invalid CSV header\n");
+        return NULL;
+    }
 
     size_t capacity = 1024;
     size_t n = 0;
     cookie_t *cookies = malloc(sizeof(cookie_t) * capacity);
-    if (!cookies) {
-        return NULL;
-    }
-
-    char line[MAX_LINE];
+    if (!cookies) return NULL;
 
     while (fgets(line, sizeof(line), file)) {
-        if (!strchr(line, '\n') && !feof(file)) {
-            int ch;
-            while ((ch = fgetc(file)) != '\n' && ch != EOF);
-            printf("Line too long, skipping\n");
-            line[0] = '\0';
-            continue;
-        }
-
         line[strcspn(line, "\r\n")] = '\0';
-        if (line[0] == '\0') {
-            continue;
-        }
+        if (line[0] == '\0') continue;
 
         if (n >= capacity) {
             capacity *= 2;
             cookie_t *tmp = realloc(cookies, sizeof(cookie_t) * capacity);
-            if (!tmp) {
-                free_cookies(cookies, n);
-                return NULL;
-            }
+            if (!tmp) { free_cookies(cookies, n); return NULL; }
             cookies = tmp;
         }
 
-        char *fields[14] = {0};
+        char *fields[18] = {0};
         char *p = line;
-
-        for (int i = 0; i < 14; i++) {
-            if (!p) {
-                fields[i] = NULL;
-                continue;
-            }
+        for (int i = 0; i < 18; i++) {
+            if (!p) { fields[i] = NULL; continue; }
             fields[i] = p;
-
             char *q = strchr(p, ',');
-            if (q) {
-                *q = '\0';
-                p = q + 1;
-            } else {
-                p = NULL;
-            }
+            if (q) { *q = '\0'; p = q + 1; } else { p = NULL; }
         }
 
-        cookies[n].name          = fields[0]  ? strdup(fields[0])  : strdup("");
-        cookies[n].value         = fields[1]  ? strdup(fields[1])  : strdup("");
-        cookies[n].domain        = fields[2]  ? strdup(fields[2])  : strdup("");
-        cookies[n].path          = fields[3]  ? strdup(fields[3])  : strdup("");
-        cookies[n].expires       = fields[4]  ? strdup(fields[4])  : strdup("");
-        cookies[n].size          = fields[5]  ? strdup(fields[5])  : strdup("");
-        cookies[n].http_only     = fields[6]  ? strdup(fields[6])  : strdup("");
-        cookies[n].secure        = fields[7]  ? strdup(fields[7])  : strdup("");
-        cookies[n].session       = fields[8]  ? strdup(fields[8])  : strdup("");
-        cookies[n].same_site     = fields[9]  ? strdup(fields[9])  : strdup("");
-        cookies[n].priority      = fields[10] ? strdup(fields[10]) : strdup("");
-        cookies[n].same_party    = fields[11] ? strdup(fields[11]) : strdup("");
-        cookies[n].source_scheme = fields[12] ? strdup(fields[12]) : strdup("");
-        cookies[n].sourcePort    = fields[13] ? strdup(fields[13]) : strdup("");
+        cookie_t *c = &cookies[n];
+        memset(c, 0, sizeof(cookie_t));
+
+        c->browser_type = fields[0] ? atoi(fields[0]) : BROWSER_CHROMIUM;
+
+        c->name   = fields[1] ? strdup(fields[1]) : strdup("");
+        c->value  = fields[2] ? strdup(fields[2]) : strdup("");
+        c->domain = fields[3] ? strdup(fields[3]) : strdup("");
+        c->path   = fields[4] ? strdup(fields[4]) : strdup("");
+        c->expires = fields[5] ? atoll(fields[5]) : 0;
+        c->http_only = fields[6] ? atoi(fields[6]) : 0;
+        c->secure    = fields[7] ? atoi(fields[7]) : 0;
+        c->session   = fields[8] ? atoi(fields[8]) : 0;
+        c->same_site = fields[9] ? atoi(fields[9]) : COOKIE_SAMESITE_NONE;
+
+        if (c->browser_type == BROWSER_CHROMIUM) {
+            c->browser.chromium.priority    = fields[10] ? atoi(fields[10]) : COOKIE_PRIORITY_LOW;
+            c->browser.chromium.same_party  = fields[11] ? atoi(fields[11]) : 0;
+            c->source_scheme                = fields[12] ? atoi(fields[12]) : SCHEME_UNSET;
+            c->browser.chromium.source_port = fields[13] ? atoi(fields[13]) : 0;
+        } else if (c->browser_type == BROWSER_FIREFOX) {
+            c->browser.firefox.creation_time    = fields[14] ? atoll(fields[14]) : 0;
+            c->browser.firefox.last_accessed    = fields[15] ? atoll(fields[15]) : 0;
+            c->browser.firefox.originAttributes = fields[16] ? strdup(fields[16]) : strdup("");
+        }
 
         n++;
     }
@@ -152,4 +171,3 @@ cookie_t *read_cookies_csv(FILE *file, size_t *count) {
     *count = n;
     return cookies;
 }
-
