@@ -1,13 +1,13 @@
-#include "chromium/chromium.h"
-#include "chromium/util.h"
+#include "dlls/firefox/firefox.h"
+#include "dlls/firefox/utils.h"
+#include "dlls/firefox/fetch_cookies.h"
 #include "dlls/discovery/discovery.h"
-#include "chromium/fetch_cookies.h"
-#include "chromium/load_cookies.h"
+#include "shared/util.h"
+#include "shared/cookies.h"
 
 #include <stdio.h>
 #include <stdbool.h>
 
-#define WEBSOCKET_URL_MAX 67
 
 // cppcheck-suppress unusedFunction
 int import_browser(const discovery_browser_t *browser, const char *filepath) {
@@ -17,8 +17,23 @@ int import_browser(const discovery_browser_t *browser, const char *filepath) {
 
 // cppcheck-suppress unusedFunction
 int export_browser(const discovery_browser_t *browser, const char *filepath) {
+    char cookie_file[MAX_PATH] = {0};
+    int len = get_cookie_file(cookie_file, sizeof(cookie_file));
+    if (len <= 0) {
+        printf("Cookie file for firefox not found\n");
+        return 1;
+    } else {
+        printf("Cookies file found %s\n", cookie_file);
+    }
 
-    printf("%s\n", browser->exe_path);
+    FILE *outfile = fopen(filepath, "w");
+    if (!outfile) {
+        fprintf(stderr, "Failed to open %s file\n", filepath);
+        return 1;
+    }
+
+    fetch_cookies(cookie_file, outfile);
+    fclose(outfile);
 
     return 0;
 }

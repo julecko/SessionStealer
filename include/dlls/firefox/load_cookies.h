@@ -1,0 +1,5 @@
+#ifndef DLLS_FIREFOX_LOAD_COOKIES_H
+#define DLLS_FIREFOX_LOAD_COOKIES_H
+
+
+#endif

@@ -4,6 +4,6 @@
 #include <stdint.h>
 
 uint64_t expires_firefox_to_chromium(uint64_t firefox_expiry);
-uint64_t chromium_to_firefox(uint64_t chromium_expires);
+uint64_t expires_chromium_to_firefox(uint64_t chromium_expires);
 
 #endif

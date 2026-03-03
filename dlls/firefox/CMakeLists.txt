@@ -1,6 +1,9 @@
 set(MAIN_SOURCES
     firefox.c
+    fetch_cookies.c
+    utils.c
     ../../shared/cookies.c
+    ../../shared/cookie_utils.c
 )
 
 add_library(firefox_browser SHARED ${MAIN_SOURCES})
