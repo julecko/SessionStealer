@@ -5,6 +5,7 @@
 
 #include <windows.h>
 #include <winhttp.h>
+#include <inttypes.h>
 
 // Caller must free
 static char *json_escape(const char *input) {
@@ -111,7 +112,7 @@ void load_cookies(const char *ws_url, const FILE *infile) {
             case COOKIE_PRIORITY_HIGH:   priority_str = "High"; break;
         }
 
-        uint64_t expires = 0;
+        int64_t expires = 0;
         if (c->browser_type == BROWSER_FIREFOX) {
             expires = expires_firefox_to_chromium(c->expires);
         } else if (c->browser_type == BROWSER_CHROMIUM) {
@@ -124,7 +125,7 @@ void load_cookies(const char *ws_url, const FILE *infile) {
             "\"value\":\"%s\","
             "\"domain\":\"%s\","
             "\"path\":\"%s\","
-            "\"expires\":%lld,"
+            "\"expires\":%" PRId64 ","
             "\"secure\":%s,"
             "\"httpOnly\":%s,"
             "\"sameSite\":\"%s\","
@@ -152,6 +153,10 @@ void load_cookies(const char *ws_url, const FILE *infile) {
     snprintf(json + offset, buffer_size - offset,
         "]}}"
     );
+
+    FILE *temp = fopen("temp.json", "w");
+    fprintf(temp, "%s", json);
+    fclose(temp);
 
     ws_send(ws, json);
 

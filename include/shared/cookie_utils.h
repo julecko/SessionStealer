@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-uint64_t expires_firefox_to_chromium(uint64_t firefox_expiry);
-uint64_t expires_chromium_to_firefox(uint64_t chromium_expires);
+int64_t expires_firefox_to_chromium(int64_t firefox_expiry);
+int64_t expires_chromium_to_firefox(int64_t chromium_expires);
 
 #endif

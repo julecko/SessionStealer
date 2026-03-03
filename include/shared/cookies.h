@@ -46,7 +46,7 @@ typedef struct cookie_t {
     char *domain;
     char *path;
 
-    uint64_t expires; // Chromium default, microseconds since 1601
+    int64_t expires; // Chromium default, microseconds since 1601
     bool http_only;
     bool secure;
     bool session;

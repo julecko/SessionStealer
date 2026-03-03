@@ -3,11 +3,12 @@
 
 #define UNIX_TO_CHROMIUM_OFFSET 11644473600ULL
 
-uint64_t expires_firefox_to_chromium(uint64_t firefox_expiry) {
-    return (firefox_expiry + UNIX_TO_CHROMIUM_OFFSET) * 1000000ULL;
+int64_t expires_firefox_to_chromium(int64_t firefox_expiry) {
+    if (firefox_expiry == 0) return 0;
+    return firefox_expiry / 1000LL;
 }
 
-uint64_t expires_chromium_to_firefox(uint64_t chromium_expires) {
-    if (chromium_expires == 0) return 0;
-    return (uint64_t)((chromium_expires / 1000000ULL) - UNIX_TO_CHROMIUM_OFFSET);
+int64_t expires_chromium_to_firefox(int64_t chromium_expiry) {
+    if (chromium_expiry == 0) return 0;
+    return chromium_expiry * 1000LL;
 }

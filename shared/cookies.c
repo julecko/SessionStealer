@@ -40,7 +40,7 @@ void print_cookie(const cookie_t *c) {
             "Chromium: name=%s value=%s domain=%s path=%s expires=%lld "
             "http_only=%d secure=%d session=%d same_site=%d priority=%d same_party=%d "
             "source_scheme=%d sourcePort=%d\n",
-            c->name, c->value, c->domain, c->path, (long long)c->expires,
+            c->name, c->value, c->domain, c->path, (int64_t)c->expires,
             c->http_only, c->secure, c->session, c->same_site,
             c->browser.chromium.priority,
             c->browser.chromium.same_party,
@@ -52,7 +52,7 @@ void print_cookie(const cookie_t *c) {
             "Firefox: name=%s value=%s domain=%s path=%s expires=%lld "
             "http_only=%d secure=%d session=%d same_site=%d "
             "creation_time=%lld last_accessed=%lld originAttributes=%s\n",
-            c->name, c->value, c->domain, c->path, (long long)c->expires,
+            c->name, c->value, c->domain, c->path, c->expires,
             c->http_only, c->secure, c->session, c->same_site,
             (long long)c->browser.firefox.creation_time,
             (long long)c->browser.firefox.last_accessed,
@@ -72,7 +72,7 @@ bool write_cookie_csv(FILE *file, const cookie_t *c) {
             c->value ? c->value : "",
             c->domain ? c->domain : "",
             c->path ? c->path : "",
-            (long long)c->expires,
+            c->expires,
             c->http_only,
             c->secure,
             c->session,
@@ -90,7 +90,7 @@ bool write_cookie_csv(FILE *file, const cookie_t *c) {
             c->value ? c->value : "",
             c->domain ? c->domain : "",
             c->path ? c->path : "",
-            (long long)c->expires,
+            c->expires,
             c->http_only,
             c->secure,
             c->session,
