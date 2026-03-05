@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_LINE 2048
+#define MAX_LINE 4096
 #define COOKIE_HEADER "browser_type,name,value,domain,path,expires,http_only,secure,session," \
                       "same_site,priority,same_party,source_scheme,sourcePort,creation_time,last_accessed,originAttributes"
 

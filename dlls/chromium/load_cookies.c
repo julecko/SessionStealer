@@ -6,6 +6,7 @@
 #include <windows.h>
 #include <winhttp.h>
 #include <inttypes.h>
+#include <stdbool.h>
 
 // Caller must free
 static char *json_escape(const char *input) {
@@ -40,12 +41,17 @@ static char *json_escape(const char *input) {
     return out;
 }
 
-void load_cookies(const char *ws_url, const FILE *infile) {
-    if (!ws_url || !infile) {
-        printf("Load cookies: invalid arguments\n");
+void load_cookies(const char *ws_url, const FILE *infile, bool json_only) {
+    if (!infile) {
+        printf("Load cookies: infile is required\n");
         return;
     }
-    
+
+    if (!json_only && !ws_url) {
+        printf("Load cookies: ws_url required when not in JSON-only mode\n");
+        return;
+    }
+
     size_t count = 0;
     cookie_t *cookies = read_cookies_csv(infile, &count);
     if (!cookies || count == 0) {
@@ -53,21 +59,11 @@ void load_cookies(const char *ws_url, const FILE *infile) {
         return;
     }
 
-    HINTERNET ws = connect_websocket(ws_url);
-    if (!ws) {
-        printf("WebSocket connection failed\n");
-        free_cookies(cookies, count);
-        return;
-    }
-
-    ws_send(ws, "{\"id\":1,\"method\":\"Network.enable\"}");
-
     // Large buffer (increase if you expect many cookies)
     size_t buffer_size = 1024 * 1024 * 10;
     char *json = malloc(buffer_size);
     if (!json) {
         printf("Malloc failed\n");
-        close_websocket(ws);
         free_cookies(cookies, count);
         return;
     }
@@ -112,13 +108,6 @@ void load_cookies(const char *ws_url, const FILE *infile) {
             case COOKIE_PRIORITY_HIGH:   priority_str = "High"; break;
         }
 
-        int64_t expires = 0;
-        if (c->browser_type == BROWSER_FIREFOX) {
-            expires = expires_firefox_to_chromium(c->expires);
-        } else if (c->browser_type == BROWSER_CHROMIUM) {
-            expires = c->expires;
-        }
-
         offset += snprintf(json + offset, buffer_size - offset,
             "{"
             "\"name\":\"%s\","
@@ -135,7 +124,7 @@ void load_cookies(const char *ws_url, const FILE *infile) {
             value,
             domain,
             path,
-            expires,
+            c->expires,
             c->secure ? "true" : "false",
             c->http_only ? "true" : "false",
             same_site_str,
@@ -150,21 +139,46 @@ void load_cookies(const char *ws_url, const FILE *infile) {
         written++;
     }
 
-    snprintf(json + offset, buffer_size - offset,
-        "]}}"
-    );
+    snprintf(json + offset, buffer_size - offset, "]}}");
 
-    FILE *temp = fopen("temp.json", "w");
-    fprintf(temp, "%s", json);
-    fclose(temp);
+    if (json_only) {
+        FILE *temp = fopen("temp.json", "w");
+        if (temp) {
+            fprintf(temp, "%s", json);
+            fclose(temp);
+        } else {
+            printf("Failed to open temp.json\n");
+            return;
+        }
+        printf("Cookies (%zu) exported to temp.json\n", count);
+        free(json);
+        free_cookies(cookies, count);
+        return;
+    }
 
+    if (!ws_url) {
+        printf("WebSocket URL missing\n");
+        free(json);
+        free_cookies(cookies, count);
+        return;
+    }
+
+    HINTERNET ws = connect_websocket(ws_url);
+    if (!ws) {
+        printf("WebSocket connection failed\n");
+        free(json);
+        free_cookies(cookies, count);
+        return;
+    }
+
+    ws_send(ws, "{\"id\":1,\"method\":\"Network.enable\"}");
     ws_send(ws, json);
-
     ws_send(ws, "{\"id\":3,\"method\":\"Page.reload\"}");
 
-    free(json);
     close_websocket(ws);
-    free_cookies(cookies, count);
 
     printf("Cookies (%zu) loaded into browser\n", count);
+
+    free(json);
+    free_cookies(cookies, count);
 }
