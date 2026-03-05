@@ -11,34 +11,16 @@ def set_cookies(cookies, ws_url):
     ws = websocket.create_connection(ws_url)
     request_id = 1
 
-    cookie_list = cookies["params"]["cookies"]
-    for cookie in cookie_list:
-        params = {
-            "name": cookie.get("name"),
-            "value": cookie.get("value"),
-            "domain": cookie.get("domain"),
-            "path": cookie.get("path", "/"),
-            "secure": cookie.get("secure", False),
-            "httpOnly": cookie.get("httpOnly", False),
-            "sameSite": cookie.get("sameSite", "None"),
-            "expires": cookie.get("expires", 0)
-        }
-
-        message = {
-            "id": request_id,
-            "method": "Network.setCookie",
-            "params": params
-        }
-
-        ws.send(json.dumps(message))
+    for cookie in cookies:
+        ws.send(json.dumps(cookie))
         response = ws.recv()
         resp_data = json.loads(response)
 
         if "error" in resp_data:
-            print(f"[ERROR] Cookie '{params['name']}' rejected: {resp_data['error']['message']}")
+            print(f"[ERROR] Cookie '{cookie['params']['name']}' rejected: {resp_data['error']['message']}")
             error_counter += 1
         else:
-            print(f"[OK] Cookie '{params['name']}' set successfully.")
+            print(f"[OK] Cookie '{cookie['params']['name']}' set successfully.")
             ok_counter += 1
 
         request_id += 1
@@ -47,7 +29,7 @@ def set_cookies(cookies, ws_url):
     print(f"Ok: {ok_counter}\nError: {error_counter}")
 
 def main():
-    with open("temp.json", "r") as f:
+    with open("cookies.json", "r") as f:
         cookies = json.load(f)
 
     tabs = requests.get(CHROME_URL).json()

@@ -41,144 +41,145 @@ static char *json_escape(const char *input) {
     return out;
 }
 
-void load_cookies(const char *ws_url, const FILE *infile, bool json_only) {
-    if (!infile) {
-        printf("Load cookies: infile is required\n");
-        return;
+static char *generate_cookie_json(const cookie_t *c, int message_id) {
+    if (!c || !c->name || !c->domain || !c->path) return NULL;
+
+    char *name   = json_escape(c->name);
+    char *value  = json_escape(c->value ? c->value : "");
+    char *domain = json_escape(c->domain);
+    char *path   = json_escape(c->path);
+
+    const char *same_site_str = "Lax";
+    switch (c->same_site) {
+        case COOKIE_SAMESITE_NONE:   same_site_str = "None"; break;
+        case COOKIE_SAMESITE_LAX:    same_site_str = "Lax"; break;
+        case COOKIE_SAMESITE_STRICT: same_site_str = "Strict"; break;
     }
 
-    if (!json_only && !ws_url) {
-        printf("Load cookies: ws_url required when not in JSON-only mode\n");
+    bool secure = c->secure;
+    if (c->same_site == COOKIE_SAMESITE_NONE) {
+        secure = true;
+    }
+
+    char *json = malloc(4096);
+    if (!json) {
+        free(name); free(value); free(domain); free(path);
+        return NULL;
+    }
+
+    snprintf(json, 4096,
+        "{"
+        "\"id\":%d,"
+        "\"method\":\"Network.setCookie\","
+        "\"params\":{"
+            "\"name\":\"%s\","
+            "\"value\":\"%s\","
+            "\"domain\":\"%s\","
+            "\"path\":\"%s\","
+            "\"secure\":%s,"
+            "\"httpOnly\":%s,"
+            "\"sameSite\":\"%s\","
+            "\"expires\":%" PRId64
+        "}"
+        "}",
+        message_id,
+        name, value, domain, path,
+        secure ? "true" : "false",
+        c->http_only ? "true" : "false",
+        same_site_str,
+        c->expires > 0 ? c->expires : 0
+    );
+
+    free(name); free(value); free(domain); free(path);
+    return json;
+}
+
+void load_cookies(const char *ws_url, const FILE *infile, bool json_only) {
+    if (!infile) {
+        fprintf(stderr, "Input file required\n");
         return;
     }
 
     size_t count = 0;
     cookie_t *cookies = read_cookies_csv(infile, &count);
     if (!cookies || count == 0) {
-        printf("No cookies loaded from file\n");
+        printf("No cookies loaded\n");
         return;
     }
 
-    // Large buffer (increase if you expect many cookies)
-    size_t buffer_size = 1024 * 1024 * 10;
-    char *json = malloc(buffer_size);
-    if (!json) {
-        printf("Malloc failed\n");
-        free_cookies(cookies, count);
-        return;
-    }
-
-    size_t offset = 0;
-
-    offset += snprintf(json + offset, buffer_size - offset,
-        "{"
-        "\"id\":2,"
-        "\"method\":\"Network.setCookies\","
-        "\"params\":{"
-        "\"cookies\":["
-    );
-
-    size_t written = 0;
-
-    for (size_t i = 0; i < count; i++) {
-        const cookie_t *c = &cookies[i];
-
-        if (!c->name || !c->value || !c->domain || !c->path)
-            continue;
-
-        if (written > 0)
-            offset += snprintf(json + offset, buffer_size - offset, ",");
-
-        char *name = json_escape(c->name);
-        char *value = json_escape(c->value);
-        char *domain = json_escape(c->domain);
-        char *path = json_escape(c->path);
-
-        const char *same_site_str = "Lax";
-        switch (c->same_site) {
-            case COOKIE_SAMESITE_NONE:   same_site_str = "None"; break;
-            case COOKIE_SAMESITE_LAX:    same_site_str = "Lax"; break;
-            case COOKIE_SAMESITE_STRICT: same_site_str = "Strict"; break;
-        }
-
-        const char *priority_str = "Medium";
-        switch (c->browser.chromium.priority) {
-            case COOKIE_PRIORITY_LOW:    priority_str = "Low"; break;
-            case COOKIE_PRIORITY_MEDIUM: priority_str = "Medium"; break;
-            case COOKIE_PRIORITY_HIGH:   priority_str = "High"; break;
-        }
-
-        offset += snprintf(json + offset, buffer_size - offset,
-            "{"
-            "\"name\":\"%s\","
-            "\"value\":\"%s\","
-            "\"domain\":\"%s\","
-            "\"path\":\"%s\","
-            "\"expires\":%" PRId64 ","
-            "\"secure\":%s,"
-            "\"httpOnly\":%s,"
-            "\"sameSite\":\"%s\","
-            "\"priority\":\"%s\""
-            "}",
-            name,
-            value,
-            domain,
-            path,
-            c->expires,
-            c->secure ? "true" : "false",
-            c->http_only ? "true" : "false",
-            same_site_str,
-            priority_str
-        );
-
-        free(name);
-        free(value);
-        free(domain);
-        free(path);
-
-        written++;
-    }
-
-    snprintf(json + offset, buffer_size - offset, "]}}");
+    int message_id = 1;
+    FILE *json_file = NULL;
+    HINTERNET ws = NULL;
 
     if (json_only) {
-        FILE *temp = fopen("temp.json", "w");
-        if (temp) {
-            fprintf(temp, "%s", json);
-            fclose(temp);
-        } else {
-            printf("Failed to open temp.json\n");
+        json_file = fopen("cookies.json", "w");
+        if (!json_file) {
+            fprintf(stderr, "Failed to open cookies.json\n");
+            free_cookies(cookies, count);
             return;
         }
-        printf("Cookies (%zu) exported to temp.json\n", count);
-        free(json);
-        free_cookies(cookies, count);
-        return;
+
+        fprintf(json_file, "[\n");
+    } else {
+        if (!ws_url) {
+            fprintf(stderr, "WebSocket URL required\n");
+            free_cookies(cookies, count);
+            return;
+        }
+
+        ws = connect_websocket(ws_url);
+        if (!ws) {
+            fprintf(stderr, "WebSocket connection failed\n");
+            free_cookies(cookies, count);
+            return;
+        }
+
+        char enable_msg[128];
+        snprintf(enable_msg, sizeof(enable_msg),
+                 "{\"id\":%d,\"method\":\"Network.enable\"}", message_id++);
+        ws_send(ws, enable_msg);
     }
 
-    if (!ws_url) {
-        printf("WebSocket URL missing\n");
-        free(json);
-        free_cookies(cookies, count);
-        return;
+    for (size_t i = 0; i < count; i++) {
+        char *cookie_json = generate_cookie_json(&cookies[i], message_id++);
+        if (!cookie_json) continue;
+
+        if (json_only) {
+            fprintf(json_file, "%s%s\n",
+                    cookie_json,
+                    (i + 1 < count) ? "," : "");
+        } else {
+            ws_send(ws, cookie_json);
+
+            char *resp = NULL;
+            bool finished = false;
+            if (ws_recv(ws, &resp, &finished)) {
+                printf("Cookie '%s' response: %s\n", cookies[i].name, resp);
+                free(resp);
+            } else {
+                printf("No response for cookie '%s'\n", cookies[i].name);
+            }
+        }
+
+        free(cookie_json);
     }
 
-    HINTERNET ws = connect_websocket(ws_url);
-    if (!ws) {
-        printf("WebSocket connection failed\n");
-        free(json);
-        free_cookies(cookies, count);
-        return;
+    if (json_only) {
+        fprintf(json_file, "]\n");
+        fclose(json_file);
+        printf("Exported %zu cookies to cookies.json\n", count);
+    } else {
+        char reload_msg[128];
+        snprintf(reload_msg, sizeof(reload_msg),
+                 "{\"id\":%d,\"method\":\"Page.reload\"}", message_id++);
+        ws_send(ws, reload_msg);
+
+        char *resp = NULL; bool finished = false;
+        if (ws_recv(ws, &resp, &finished)) free(resp);
+
+        close_websocket(ws);
+        printf("Loaded %zu cookies via WebSocket\n", count);
     }
 
-    ws_send(ws, "{\"id\":1,\"method\":\"Network.enable\"}");
-    ws_send(ws, json);
-    ws_send(ws, "{\"id\":3,\"method\":\"Page.reload\"}");
-
-    close_websocket(ws);
-
-    printf("Cookies (%zu) loaded into browser\n", count);
-
-    free(json);
     free_cookies(cookies, count);
 }
