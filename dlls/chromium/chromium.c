@@ -44,7 +44,8 @@ int import_browser(const discovery_browser_t *browser, const char *filepath) {
         printf("File not found\n");
         return 1;
     }
-    load_cookies(websocket_url, infile, true);
+
+    load_cookies(websocket_url, infile, false);
     fclose(infile);
 
     return 0;

@@ -1,6 +1,7 @@
 set(MAIN_SOURCES
     firefox.c
     fetch_cookies.c
+    load_cookies.c
     utils.c
     ../../shared/cookies.c
     ../../shared/cookie_utils.c
