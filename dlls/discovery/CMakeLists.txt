@@ -3,6 +3,7 @@ set(MAIN_SOURCES
     utils.c
     edge.c
     firefox.c
+    chrome.c
 )
 
 add_library(discovery SHARED ${MAIN_SOURCES})

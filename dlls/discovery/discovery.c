@@ -1,6 +1,7 @@
 #include "discovery/discovery.h"
 #include "discovery/edge.h"
 #include "discovery/firefox.h"
+#include "discovery/chrome.h"
 
 #include <stdio.h>
 #include <stdbool.h>
@@ -10,6 +11,7 @@ typedef bool (*discover_func_t)(discovery_browser_t *browser);
 static discover_func_t browser_discover_table[] = {
     discover_edge,
     discover_firefox,
+    discover_chrome,
 };
 
 // cppcheck-suppress unusedFunction

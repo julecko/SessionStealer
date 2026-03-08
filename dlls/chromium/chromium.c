@@ -10,13 +10,28 @@
 
 #define WEBSOCKET_URL_MAX 67
 
+static const char *get_browser_process(discovery_browser_name_t browser) {
+    switch (browser) {
+        case DISCOVERY_EDGE:
+            return "msedge.exe";
+        case DISCOVERY_CHROME:
+            return "chrome.exe";
+        default:
+            return NULL;
+    }
+}
+
+
 // cppcheck-suppress unusedFunction
 int import_browser(const discovery_browser_t *browser, const char *filepath) {
-    run_program(5, "taskkill /F /IM msedge.exe");
+    char cmd[128];
+    sprintf(cmd, "taskkill /F /IM %s", get_browser_process(browser->browser_name));
+    
+    run_program(0, "%s", cmd);
 
     int port = 5000;
     char user_data_dir[MAX_PATH];
-    get_user_data_dir(user_data_dir);
+    get_user_data_dir(browser->browser_name, user_data_dir);
 
     run_program(0, "\"%s\" --remote-debugging-port=%d --remote-allow-origins=http://localhost:%d --user-data-dir=\"%s\" --profile-directory=\"Profile 2\" \
                     --disable-logging --log-level=3",
@@ -53,11 +68,14 @@ int import_browser(const discovery_browser_t *browser, const char *filepath) {
 
 // cppcheck-suppress unusedFunction
 int export_browser(const discovery_browser_t *browser, const char *filepath) {
-    run_program(5, "taskkill /F /IM msedge.exe");
+    char cmd[128];
+    sprintf(cmd, "taskkill /F /IM %s", get_browser_process(browser->browser_name));
+    
+    run_program(0, "%s", cmd);
 
     int port = 5000;
     char user_data_dir[MAX_PATH];
-    get_user_data_dir(user_data_dir);
+    get_user_data_dir(browser->browser_name, user_data_dir);
 
     run_program(0, "\"%s\" --headless --disable-gpu --remote-debugging-port=%d --remote-allow-origins=http://localhost:%d --user-data-dir=\"%s\" --profile-directory=\"Default\" \
                     --disable-logging --log-level=3",
@@ -88,7 +106,7 @@ int export_browser(const discovery_browser_t *browser, const char *filepath) {
     fetch_cookies(websocket_url, outfile);
     fclose(outfile);
 
-    run_program(0, "taskkill /F /IM msedge.exe");
+    run_program(0, "%s", cmd);
 
     return 0;
 }
