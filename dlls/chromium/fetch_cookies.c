@@ -86,7 +86,7 @@ static char *get_cookie(cookie_t *cookie, char *start_original) {
         { "session",       &cookie->session, TYPE_BOOL, true },
         { "sameSite",      &cookie->same_site, TYPE_ENUM_SAMESITE, false },
         { "priority",      &cookie->browser.chromium.priority, TYPE_INT, true },
-        { "sameParty",     &cookie->browser.chromium.same_party, TYPE_BOOL, true },
+        { "sameParty",     &cookie->browser.chromium.same_party, TYPE_BOOL, false },
         { "sourceScheme",  &cookie->source_scheme, TYPE_ENUM_SCHEME, true },
         { "sourcePort",    &cookie->browser.chromium.source_port, TYPE_INT, true },
     };
@@ -95,12 +95,12 @@ static char *get_cookie(cookie_t *cookie, char *start_original) {
     if (!object_start) {
         return NULL;
     }
-    const char *cookie_end = find_object_end(object_start);
+    char *cookie_end = find_object_end(object_start);
     if (!cookie_end) {
         return NULL;
     }
 
-    char *cursor = start_original;
+    char *cursor = object_start;
     for (size_t i = 0; i < sizeof(fields)/sizeof(fields[0]); i++) {
         char *val = extract_json_string(cursor, cookie_end, fields[i].key, &cursor);
         if (!val && fields[i].required) return NULL;

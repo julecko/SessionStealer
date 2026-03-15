@@ -27,7 +27,7 @@ int import_browser(const discovery_browser_t *browser, const char *filepath) {
     char cmd[128];
     sprintf(cmd, "taskkill /F /IM %s", get_browser_process(browser->browser_name));
     
-    run_program(0, "%s", cmd);
+    run_program(1, "%s", cmd);
 
     int port = 5000;
     char user_data_dir[MAX_PATH];
@@ -71,7 +71,7 @@ int export_browser(const discovery_browser_t *browser, const char *filepath) {
     char cmd[128];
     sprintf(cmd, "taskkill /F /IM %s", get_browser_process(browser->browser_name));
     
-    run_program(0, "%s", cmd);
+    run_program(1, "%s", cmd);
 
     int port = 5000;
     char user_data_dir[MAX_PATH];
