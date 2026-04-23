@@ -198,7 +198,6 @@ def main():
     ])
     time.sleep(3)
 
-    # Step 5: Iterate domains, navigate, fetch cookies
     all_results = {}
 
     try:
@@ -223,7 +222,6 @@ def main():
         print("DevTools connection failed:", e)
         return
 
-    # Summary
     print("\n=== SUMMARY ===")
     total = 0
     for domain, cookies in all_results.items():
