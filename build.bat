@@ -85,6 +85,19 @@ if errorlevel 1 (
     exit /b 1
 )
 
+REM Run tests automatically in Debug
+
+if "%BUILD_TYPE%"=="Debug" (
+    echo.
+    echo Running tests...
+    ctest --test-dir "%BUILD_DIR%" -C %BUILD_TYPE% --output-on-failure
+    if errorlevel 1 (
+        echo.
+        echo [ERROR] Tests failed.
+        exit /b 1
+    )
+)
+
 
 REM Run
 
@@ -103,7 +116,7 @@ REM --------------------------
 echo.
 echo Usage: %~nx0 [-d] [-r [args]]
 echo.
-echo    -d           Build in Debug mode (default is Release)
+echo    -d           Build in Debug mode (default is Release), automatically runs tests
 echo    -r [args]    Run the executable after build with optional arguments
 echo    -c           Run Cppcheck only, do not build
 echo.
