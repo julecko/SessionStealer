@@ -3,8 +3,6 @@
 # -----------------------
 set(CORE_SOURCES
     edge.c
-    util.c
-    websocket.c
     fetch_cookies.c
     load_cookies.c
     ../../shared/cookies.c
