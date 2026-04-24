@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 typedef enum {
-    BROWSER_CHROMIUM = 0,
+    BROWSER_EDGE = 0,
     BROWSER_FIREFOX  = 1
 } browser_type_t;
 
@@ -32,7 +32,7 @@ typedef struct {
     cookie_priority_t priority;
     bool same_party;
     int source_port;
-} chromium_fields_t;
+} edge_fields_t;
 
 typedef struct {
     int64_t creation_time;    // microseconds since epoch
@@ -46,7 +46,7 @@ typedef struct cookie_t {
     char *domain;
     char *path;
 
-    int64_t expires; // Chromium default, microseconds since 1601
+    int64_t expires; // chromium default, microseconds since 1601
     bool http_only;
     bool secure;
     bool session;
@@ -56,7 +56,7 @@ typedef struct cookie_t {
     browser_type_t browser_type;
 
     union {
-        chromium_fields_t chromium;
+        edge_fields_t edge;
         firefox_fields_t firefox;
     } browser;
 } cookie_t;

@@ -1,5 +1,5 @@
-#ifndef DLLS_CHROMIUM_LOAD_COOKIES_H
-#define DLLS_CHROMIUM_LOAD_COOKIES_H
+#ifndef DLLS_EDGE_LOAD_COOKIES_H
+#define DLLS_EDGE_LOAD_COOKIES_H
 
 #include <stdio.h>
 #include <stdbool.h>

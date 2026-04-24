@@ -13,5 +13,5 @@ macro(add_core_test TEST_NAME TEST_SOURCE LINK_TARGET)
     gtest_discover_tests(${TEST_NAME})
 endmacro()
 
-# --- Chromium ---
-add_core_test(test_chromium_websocket chromium/test_websocket.cpp chromium_browser_core)
+# --- chromium ---
+add_core_test(test_chromium_websocket chromium/test_websocket.cpp edge_browser_core)

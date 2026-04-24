@@ -1,8 +1,8 @@
-#include "chromium/chromium.h"
-#include "chromium/util.h"
+#include "edge/edge.h"
+#include "edge/util.h"
 #include "dlls/discovery/discovery.h"
-#include "chromium/fetch_cookies.h"
-#include "chromium/load_cookies.h"
+#include "edge/fetch_cookies.h"
+#include "edge/load_cookies.h"
 #include "shared/util.h"
 
 #include <stdio.h>
@@ -23,7 +23,7 @@ static const char *get_browser_process(discovery_browser_name_t browser) {
 
 
 // cppcheck-suppress unusedFunction
-int import_browser(const discovery_browser_t *browser, const char *filepath) {
+int import_browser_internal(const discovery_browser_t *browser, const char *filepath) {
     char cmd[128];
     sprintf(cmd, "taskkill /F /IM %s", get_browser_process(browser->browser_name));
     
@@ -67,7 +67,7 @@ int import_browser(const discovery_browser_t *browser, const char *filepath) {
 }
 
 // cppcheck-suppress unusedFunction
-int export_browser(const discovery_browser_t *browser, const char *filepath) {
+int export_browser_internal(const discovery_browser_t *browser, const char *filepath) {
     char cmd[128];
     sprintf(cmd, "taskkill /F /IM %s", get_browser_process(browser->browser_name));
     

@@ -1,5 +1,5 @@
-#ifndef DLL_CHROMIUM_WEBSOCKET_H
-#define DLL_CHROMIUM_WEBSOCKET_H
+#ifndef DLL_EDGE_WEBSOCKET_H
+#define DLL_EDGE_WEBSOCKET_H
 
 #include <windows.h>
 #include <winhttp.h>

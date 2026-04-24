@@ -1,5 +1,5 @@
 extern "C" {
-    #include "dlls/chromium/util.h"
+    #include "dlls/edge/util.h"
 }
 #include <gtest/gtest.h>
 

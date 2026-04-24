@@ -1,5 +1,5 @@
-#include "dlls/chromium/load_cookies.h"
-#include "dlls/chromium/websocket.h"
+#include "dlls/edge/load_cookies.h"
+#include "dlls/edge/websocket.h"
 #include "shared/cookies.h"
 #include "shared/cookie_utils.h"
 

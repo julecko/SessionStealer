@@ -1,5 +1,5 @@
-#ifndef DLL_CHROMIUM_UTIL_H
-#define DLL_CHROMIUM_UTIL_H
+#ifndef DLL_EDGE_UTIL_H
+#define DLL_EDGE_UTIL_H
 
 #include "dlls/discovery/discovery.h"
 #include <windows.h>

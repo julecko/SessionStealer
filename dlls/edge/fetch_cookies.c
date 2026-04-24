@@ -1,4 +1,4 @@
-#include "dlls/chromium/websocket.h"
+#include "dlls/edge/websocket.h"
 #include "shared/cookies.h"
 
 #include <windows.h>
@@ -85,10 +85,10 @@ static char *get_cookie(cookie_t *cookie, char *start_original) {
         { "secure",        &cookie->secure, TYPE_BOOL, true },
         { "session",       &cookie->session, TYPE_BOOL, true },
         { "sameSite",      &cookie->same_site, TYPE_ENUM_SAMESITE, false },
-        { "priority",      &cookie->browser.chromium.priority, TYPE_INT, true },
-        { "sameParty",     &cookie->browser.chromium.same_party, TYPE_BOOL, false },
+        { "priority",      &cookie->browser.edge.priority, TYPE_INT, true },
+        { "sameParty",     &cookie->browser.edge.same_party, TYPE_BOOL, false },
         { "sourceScheme",  &cookie->source_scheme, TYPE_ENUM_SCHEME, true },
-        { "sourcePort",    &cookie->browser.chromium.source_port, TYPE_INT, true },
+        { "sourcePort",    &cookie->browser.edge.source_port, TYPE_INT, true },
     };
 
     const char *object_start = strstr(start_original, "{\"name");
@@ -189,7 +189,7 @@ void fetch_cookies(const char *ws_url, const FILE *outfile) {
         }
         while (true) {
             cookie_t cookie = {0};
-            cookie.browser_type = BROWSER_CHROMIUM;
+            cookie.browser_type = BROWSER_EDGE;
             tmp = get_cookie(&cookie, start);
             if (!tmp) {
                 break;

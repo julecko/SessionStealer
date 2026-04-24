@@ -35,17 +35,17 @@ void free_cookies(cookie_t *cookies, size_t count) {
 void print_cookie(const cookie_t *c) {
     if (!c) return;
 
-    if (c->browser_type == BROWSER_CHROMIUM) {
+    if (c->browser_type == BROWSER_EDGE) {
         printf(
-            "Chromium: name=%s value=%s domain=%s path=%s expires=%lld "
+            "edge: name=%s value=%s domain=%s path=%s expires=%lld "
             "http_only=%d secure=%d session=%d same_site=%d priority=%d same_party=%d "
             "source_scheme=%d sourcePort=%d\n",
             c->name, c->value, c->domain, c->path, (int64_t)c->expires,
             c->http_only, c->secure, c->session, c->same_site,
-            c->browser.chromium.priority,
-            c->browser.chromium.same_party,
+            c->browser.edge.priority,
+            c->browser.edge.same_party,
             c->source_scheme,
-            c->browser.chromium.source_port
+            c->browser.edge.source_port
         );
     } else {
         printf(
@@ -64,7 +64,7 @@ void print_cookie(const cookie_t *c) {
 bool write_cookie_csv(FILE *file, const cookie_t *c) {
     if (!file || !c) return false;
 
-    if (c->browser_type == BROWSER_CHROMIUM) {
+    if (c->browser_type == BROWSER_EDGE) {
         return fprintf(file,
             "%d,%s,%s,%s,%s,%lld,%d,%d,%d,%d,%d,%d,%d,%d,,,\n",
             c->browser_type,
@@ -77,10 +77,10 @@ bool write_cookie_csv(FILE *file, const cookie_t *c) {
             c->secure,
             c->session,
             c->same_site,
-            c->browser.chromium.priority,
-            c->browser.chromium.same_party,
+            c->browser.edge.priority,
+            c->browser.edge.same_party,
             c->source_scheme,
-            c->browser.chromium.source_port
+            c->browser.edge.source_port
         ) > 0;
     } else if (c->browser_type == BROWSER_FIREFOX) { // Firefox
         return fprintf(file,
@@ -142,7 +142,7 @@ cookie_t *read_cookies_csv(FILE *file, size_t *count) {
         cookie_t *c = &cookies[n];
         memset(c, 0, sizeof(cookie_t));
 
-        c->browser_type = fields[0] ? atoi(fields[0]) : BROWSER_CHROMIUM;
+        c->browser_type = fields[0] ? atoi(fields[0]) : BROWSER_EDGE;
 
         c->name   = fields[1] ? strdup(fields[1]) : strdup("");
         c->value  = fields[2] ? strdup(fields[2]) : strdup("");
@@ -154,11 +154,11 @@ cookie_t *read_cookies_csv(FILE *file, size_t *count) {
         c->session   = fields[8] ? atoi(fields[8]) : 0;
         c->same_site = fields[9] ? atoi(fields[9]) : COOKIE_SAMESITE_NONE;
 
-        if (c->browser_type == BROWSER_CHROMIUM) {
-            c->browser.chromium.priority    = fields[10] ? atoi(fields[10]) : COOKIE_PRIORITY_LOW;
-            c->browser.chromium.same_party  = fields[11] ? atoi(fields[11]) : 0;
+        if (c->browser_type == BROWSER_EDGE) {
+            c->browser.edge.priority    = fields[10] ? atoi(fields[10]) : COOKIE_PRIORITY_LOW;
+            c->browser.edge.same_party  = fields[11] ? atoi(fields[11]) : 0;
             c->source_scheme                = fields[12] ? atoi(fields[12]) : SCHEME_UNSET;
-            c->browser.chromium.source_port = fields[13] ? atoi(fields[13]) : 0;
+            c->browser.edge.source_port = fields[13] ? atoi(fields[13]) : 0;
         } else if (c->browser_type == BROWSER_FIREFOX) {
             c->browser.firefox.creation_time    = fields[14] ? atoll(fields[14]) : 0;
             c->browser.firefox.last_accessed    = fields[15] ? atoll(fields[15]) : 0;
