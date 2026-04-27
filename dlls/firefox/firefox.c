@@ -11,7 +11,7 @@
 
 
 // cppcheck-suppress unusedFunction
-int import_browser(const discovery_browser_t *browser, const char *filepath) {
+int import_browser_internal(const discovery_browser_t *browser, const char *filepath) {
     char cookie_file[MAX_PATH] = {0};
     int len = get_cookie_file(cookie_file, sizeof(cookie_file));
     if (len <= 0) {
@@ -34,7 +34,7 @@ int import_browser(const discovery_browser_t *browser, const char *filepath) {
 }
 
 // cppcheck-suppress unusedFunction
-int export_browser(const discovery_browser_t *browser, const char *filepath) {
+int export_browser_internal(const discovery_browser_t *browser, const char *filepath) {
     char cookie_file[MAX_PATH] = {0};
     int len = get_cookie_file(cookie_file, sizeof(cookie_file));
     if (len <= 0) {

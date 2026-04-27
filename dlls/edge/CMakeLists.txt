@@ -63,4 +63,9 @@ if (MSVC)
     target_link_options(edge_browser PRIVATE
         $<$<CONFIG:Debug>:/DEBUG>
     )
+else()
+    target_compile_options(firefox_browser PRIVATE
+        $<$<CONFIG:Debug>:${GLOBAL_DEBUG_FLAGS}>
+        $<$<CONFIG:Release>:${GLOBAL_RELEASE_FLAGS}>
+    )
 endif()
