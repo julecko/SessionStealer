@@ -44,7 +44,11 @@ add_library(edge_browser SHARED
 )
 
 target_link_libraries(edge_browser PRIVATE edge_browser_core)
-
+target_compile_definitions(edge_browser PRIVATE
+    EDGE_EXPORTS
+    $<$<CONFIG:Debug>:DEBUG_MODE=1>
+    $<$<CONFIG:Release>:NDEBUG>
+)
 set_target_properties(edge_browser PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
@@ -52,7 +56,10 @@ set_target_properties(edge_browser PROPERTIES
 )
 
 if (MSVC)
-    target_compile_definitions(edge_browser PRIVATE EDGE_EXPORTS)
+    target_compile_options(edge_browser PRIVATE
+        $<$<CONFIG:Debug>:${GLOBAL_DEBUG_FLAGS}>
+        $<$<CONFIG:Release>:${GLOBAL_RELEASE_FLAGS}>
+    )
     target_link_options(edge_browser PRIVATE
         $<$<CONFIG:Debug>:/DEBUG>
     )

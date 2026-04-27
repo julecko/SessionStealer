@@ -1,4 +1,4 @@
-#include "dlls/edge/websocket.h"
+#include "dlls/chromium/websocket.h"
 #include <windows.h>
 #include <winhttp.h>
 #include <stdio.h>
@@ -13,7 +13,7 @@ static wchar_t* utf8_to_wide(const char* str) {
     return out;
 }
 
-HINTERNET connect_websocket(const char* ws_url) {
+HINTERNET connect_websocket_internal(const char* ws_url) {
     wchar_t* wurl_original = utf8_to_wide(ws_url);
     wchar_t ws_fixed[512];
 
@@ -114,8 +114,12 @@ HINTERNET connect_websocket(const char* ws_url) {
     }
 
     HINTERNET ws = WinHttpWebSocketCompleteUpgrade(request, 0);
-
     WinHttpCloseHandle(request);
+
+    if (!ws) {
+        printf("[WS] Upgrade failed: %lu\n", GetLastError());
+        return NULL;
+    }
 
     DWORD timeout = 5000;
     WinHttpSetOption(
@@ -124,10 +128,12 @@ HINTERNET connect_websocket(const char* ws_url) {
         &timeout,
         sizeof(timeout)
     );
+
+    printf("[WS] handle = %p\n", ws);
     return ws;
 }
 
-void ws_send(HINTERNET ws, const char *c) {
+void ws_send_internal(HINTERNET ws, const char *c) {
     WinHttpWebSocketSend(ws,
         WINHTTP_WEB_SOCKET_UTF8_MESSAGE_BUFFER_TYPE,
         (PVOID)c,
@@ -135,14 +141,16 @@ void ws_send(HINTERNET ws, const char *c) {
 }
 
 // Caller must free char **out
-bool ws_recv(HINTERNET ws, char **out, bool *frame_finished) {
+bool ws_recv_internal(HINTERNET ws, char **out, bool *frame_finished) {
     DWORD size = 0;
     DWORD type = 0;
-    char buffer[WEBSOCKET_RECV_MAX];
+    unsigned char buffer[WEBSOCKET_RECV_MAX];
 
     DWORD result = WinHttpWebSocketReceive(ws, buffer, sizeof(buffer)-1, &size, &type);
 
-    if (result != NO_ERROR || result) return false;
+    printf("[ws_recv] result=%lu size=%lu type=%lu\n", result, size, type);
+
+    if (result != NO_ERROR) return false;
 
     buffer[size] = 0;
     *out = _strdup(buffer);
@@ -152,7 +160,7 @@ bool ws_recv(HINTERNET ws, char **out, bool *frame_finished) {
     return true;
 }
 
-void close_websocket(HINTERNET ws) {
+void close_websocket_internal(HINTERNET ws) {
     WinHttpWebSocketClose(ws,
         WINHTTP_WEB_SOCKET_SUCCESS_CLOSE_STATUS,
         NULL, 0);

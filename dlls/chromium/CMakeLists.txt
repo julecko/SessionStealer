@@ -33,14 +33,18 @@ else()
 endif()
 
 # -----------------------
-# chromium — thin DLL, only exposes public API
+# chromium — thin DLL, only links core, no sources recompiled
 # -----------------------
 add_library(chromium SHARED
     chromium_exports.c
 )
 
 target_link_libraries(chromium PRIVATE chromium_core)
-
+target_compile_definitions(chromium PRIVATE
+    CHROMIUM_EXPORTS
+    $<$<CONFIG:Debug>:DEBUG_MODE=1>
+    $<$<CONFIG:Release>:NDEBUG>
+)
 set_target_properties(chromium PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
@@ -48,7 +52,10 @@ set_target_properties(chromium PROPERTIES
 )
 
 if (MSVC)
-    target_compile_definitions(chromium PRIVATE CHROMIUM_EXPORTS)
+    target_compile_options(chromium PRIVATE
+        $<$<CONFIG:Debug>:${GLOBAL_DEBUG_FLAGS}>
+        $<$<CONFIG:Release>:${GLOBAL_RELEASE_FLAGS}>
+    )
     target_link_options(chromium PRIVATE
         $<$<CONFIG:Debug>:/DEBUG>
     )

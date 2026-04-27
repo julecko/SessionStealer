@@ -45,8 +45,9 @@ include_directories(${PROJECT_SOURCE_DIR}/include/dlls)
 # -----------------------
 add_subdirectory(src)
 add_subdirectory(dlls/discovery)
-add_subdirectory(dlls/edge)
 add_subdirectory(dlls/firefox)
+add_subdirectory(dlls/chromium)
+add_subdirectory(dlls/edge)
 
 enable_testing()
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR BUILD_TESTS)

