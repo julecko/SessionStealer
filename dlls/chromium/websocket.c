@@ -129,7 +129,6 @@ HINTERNET connect_websocket_internal(const char* ws_url) {
         sizeof(timeout)
     );
 
-    printf("[WS] handle = %p\n", ws);
     return ws;
 }
 
@@ -147,8 +146,6 @@ bool ws_recv_internal(HINTERNET ws, char **out, bool *frame_finished) {
     unsigned char buffer[WEBSOCKET_RECV_MAX];
 
     DWORD result = WinHttpWebSocketReceive(ws, buffer, sizeof(buffer)-1, &size, &type);
-
-    printf("[ws_recv] result=%lu size=%lu type=%lu\n", result, size, type);
 
     if (result != NO_ERROR) return false;
 

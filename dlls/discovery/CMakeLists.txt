@@ -15,6 +15,7 @@ set_target_properties(discovery PROPERTIES
 )
 
 target_compile_definitions(discovery PRIVATE
+    DISCOVERY_EXPORTS
     $<$<CONFIG:Debug>:DEBUG_MODE=1>
     $<$<CONFIG:Release>:NDEBUG>
 )
@@ -27,7 +28,6 @@ if (MSVC)
     target_link_options(discovery PRIVATE
         $<$<CONFIG:Debug>:/DEBUG>
     )
-    target_compile_definitions(discovery PRIVATE DISCOVERY_EXPORTS)
 else()
     target_compile_options(discovery PRIVATE
         $<$<CONFIG:Debug>:${GLOBAL_DEBUG_FLAGS}>

@@ -2,6 +2,8 @@
 #include "dlls/chromium/util.h"
 #include "dlls/chromium/websocket.h"
 #include <stdbool.h>
+#include <windows.h>
+#include <winhttp.h>
 
 CHROMIUM_API char *http_get_local_json(int port) {
     return http_get_local_json_internal(port);

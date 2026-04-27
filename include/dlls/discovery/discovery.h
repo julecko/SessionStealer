@@ -1,11 +1,13 @@
 #ifndef DISCOVERY_DISCOVERY_H
 #define DISCOVERY_DISCOVERY_H
 
-#ifdef _WIN32
+#ifdef WIN32
     #ifdef DISCOVERY_EXPORTS
         #define DISCOVERY_API __declspec(dllexport)
-    #else
+    #elif defined(DISCOVERY_IMPORTS)
         #define DISCOVERY_API __declspec(dllimport)
+    #else
+        #define DISCOVERY_API
     #endif
 #else
     #define DISCOVERY_API

@@ -1,9 +1,10 @@
-#include "dlls/discovery/discovery.h"
-#include <winhttp.h>
-#include <stdbool.h>
-
 #ifndef DLL_CHROMIUM_EXPORTS_H
 #define DLL_CHROMIUM_EXPORTS_H
+
+#include "dlls/discovery/discovery.h"
+#include <windows.h>
+#include <winhttp.h>
+#include <stdbool.h>
 
 #ifdef CHROMIUM_EXPORTS
     #define CHROMIUM_API __declspec(dllexport)
@@ -17,9 +18,9 @@ typedef char* (*http_get_local_json_fn)(int);
 typedef bool (*extract_ws_url_fn)(char*, size_t, const char*);
 typedef int (*get_user_data_dir_fn)(int, char*);
 typedef HINTERNET (*connect_websocket_fn)(const char*);
-typedef void (*ws_send_fn)(void*, const char*);
-typedef bool (*ws_recv_fn)(void*, char**, bool*);
-typedef void (*close_websocket_fn)(void*);
+typedef void (*ws_send_fn)(HINTERNET, const char*);
+typedef bool (*ws_recv_fn)(HINTERNET, char**, bool*);
+typedef void (*close_websocket_fn)(HINTERNET);
 
 CHROMIUM_API char *http_get_local_json(int port);
 CHROMIUM_API bool extract_ws_url(char *buffer, size_t buffer_len, const char *json_text);

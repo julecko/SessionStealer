@@ -3,10 +3,14 @@
 
 #include "dlls/discovery/discovery.h"
 
-#ifdef EDGE_EXPORTS
-    #define EDGE_API __declspec(dllexport)
-#elif defined(EDGE_IMPORTS)
-    #define EDGE_API __declspec(dllimport)
+#ifdef WIN32
+    #ifdef EDGE_EXPORTS
+        #define EDGE_API __declspec(dllexport)
+    #elif defined(EDGE_IMPORTS)
+        #define EDGE_API __declspec(dllimport)
+    #else
+        #define EDGE_API
+    #endif
 #else
     #define EDGE_API
 #endif
