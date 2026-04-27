@@ -27,7 +27,7 @@ if (MSVC)
     )
     target_link_options(discovery PRIVATE
         $<$<CONFIG:Debug>:/DEBUG>
-    )
+    ) 
 else()
     target_compile_options(discovery PRIVATE
         $<$<CONFIG:Debug>:${GLOBAL_DEBUG_FLAGS}>

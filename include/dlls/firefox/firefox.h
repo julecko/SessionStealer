@@ -6,8 +6,10 @@
 #ifdef _WIN32
     #ifdef FIREFOX_EXPORTS
         #define FIREFOX_API __declspec(dllexport)
-    #else
+    #elif defined(FIREFOX_IMPORTS)
         #define FIREFOX_API __declspec(dllimport)
+    #else
+        #define FIREFOX_API
     #endif
 #else
     #define FIREFOX_API
