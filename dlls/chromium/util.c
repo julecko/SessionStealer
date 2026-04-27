@@ -11,7 +11,7 @@
 
 
 // Caller must free result
-char *http_get_local_json(int port) {
+char *http_get_local_json_internal(int port) {
     HINTERNET hSession = WinHttpOpen(L"CDP/1.0",
         WINHTTP_ACCESS_TYPE_NO_PROXY,
         WINHTTP_NO_PROXY_NAME,
@@ -77,7 +77,7 @@ char *http_get_local_json(int port) {
     return buffer;
 }
 
-bool extract_ws_url(char *buffer, size_t buffer_len, const char *json_text) {
+bool extract_ws_url_internal(char *buffer, size_t buffer_len, const char *json_text) {
     const char start_json_field_string[] = "webSocketDebuggerUrl";
     const char start_ws_string[] = "ws";
     const char end_char = '"';
@@ -111,7 +111,7 @@ bool extract_ws_url(char *buffer, size_t buffer_len, const char *json_text) {
     return true;
 }
 
-int get_user_data_dir(discovery_browser_name_t browser, char *user_data_dir) {
+int get_user_data_dir_internal(discovery_browser_name_t browser, char *user_data_dir) {
     char localappdata[MAX_PATH];
     GetEnvironmentVariableA("LOCALAPPDATA", localappdata, MAX_PATH);
 

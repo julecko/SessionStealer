@@ -1,5 +1,5 @@
-#ifndef DLL_CHROMIUM_FETCH_COOKIES_H
-#define DLL_CHROMIUM_FETCH_COOKIES_H
+#ifndef DLL_EDGE_FETCH_COOKIES_H
+#define DLL_EDGE_FETCH_COOKIES_H
 
 #include <windows.h>
 #include <winhttp.h>

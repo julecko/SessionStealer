@@ -1,5 +1,5 @@
-#include "dlls/chromium/load_cookies.h"
-#include "dlls/chromium/websocket.h"
+#include "dlls/edge/load_cookies.h"
+#include "dlls/edge/edge.h"
 #include "shared/cookies.h"
 #include "shared/cookie_utils.h"
 
@@ -127,7 +127,7 @@ void load_cookies(const char *ws_url, const FILE *infile, bool json_only) {
             return;
         }
 
-        ws = connect_websocket(ws_url);
+        ws = connect_websocket_ptr ? connect_websocket_ptr(ws_url) : NULL;
         if (!ws) {
             fprintf(stderr, "WebSocket connection failed\n");
             free_cookies(cookies, count);
@@ -137,7 +137,7 @@ void load_cookies(const char *ws_url, const FILE *infile, bool json_only) {
         char enable_msg[128];
         snprintf(enable_msg, sizeof(enable_msg),
                  "{\"id\":%d,\"method\":\"Network.enable\"}", message_id++);
-        ws_send(ws, enable_msg);
+        if (ws_send_ptr) ws_send_ptr(ws, enable_msg);
     }
 
     for (size_t i = 0; i < count; i++) {
@@ -149,11 +149,11 @@ void load_cookies(const char *ws_url, const FILE *infile, bool json_only) {
                     cookie_json,
                     (i + 1 < count) ? "," : "");
         } else {
-            ws_send(ws, cookie_json);
+            if (ws_send_ptr) ws_send_ptr(ws, cookie_json);
 
             char *resp = NULL;
             bool finished = false;
-            if (ws_recv(ws, &resp, &finished)) {
+            if (ws_recv_ptr && ws_recv_ptr(ws, &resp, &finished)) {
                 printf("Cookie '%s' response: %s\n", cookies[i].name, resp);
                 free(resp);
             } else {
@@ -172,12 +172,12 @@ void load_cookies(const char *ws_url, const FILE *infile, bool json_only) {
         char reload_msg[128];
         snprintf(reload_msg, sizeof(reload_msg),
                  "{\"id\":%d,\"method\":\"Page.reload\"}", message_id++);
-        ws_send(ws, reload_msg);
+        if (ws_send_ptr) ws_send_ptr(ws, reload_msg);
 
         char *resp = NULL; bool finished = false;
-        if (ws_recv(ws, &resp, &finished)) free(resp);
+        if (ws_recv_ptr && ws_recv_ptr(ws, &resp, &finished)) free(resp);
 
-        close_websocket(ws);
+        if (close_websocket_ptr) close_websocket_ptr(ws);
         printf("Loaded %zu cookies via WebSocket\n", count);
     }
 

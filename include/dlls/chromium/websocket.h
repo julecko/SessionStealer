@@ -7,9 +7,9 @@
 
 #define WEBSOCKET_RECV_MAX 8192
 
-HINTERNET connect_websocket(const char* ws_url);
-void ws_send(HINTERNET ws, const char *c);
-bool ws_recv(HINTERNET ws, char **out, bool *frame_finished);
-void close_websocket(HINTERNET ws);
+HINTERNET connect_websocket_internal(const char* ws_url);
+void ws_send_internal(HINTERNET ws, const char *c);
+bool ws_recv_internal(HINTERNET ws, char **out, bool *frame_finished);
+void close_websocket_internal(HINTERNET ws);
 
 #endif
