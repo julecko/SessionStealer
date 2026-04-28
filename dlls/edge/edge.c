@@ -68,7 +68,7 @@ int import_browser_internal(const discovery_browser_t *browser, const char *file
     int port = 5000;
     char user_data_dir[MAX_PATH];
     if (get_user_data_dir_ptr) {
-        get_user_data_dir_ptr(browser->browser_name, user_data_dir);
+        get_user_data_dir_ptr(browser->browser_name, user_data_dir, sizeof(user_data_dir));
     } else {
         printf("get_user_data_dir function not loaded\n");
         return 1;
@@ -119,7 +119,7 @@ int export_browser_internal(const discovery_browser_t *browser, const char *file
     int port = 5000;
     char user_data_dir[MAX_PATH];
     if (get_user_data_dir_ptr) {
-        get_user_data_dir_ptr(browser->browser_name, user_data_dir);
+        get_user_data_dir_ptr(browser->browser_name, user_data_dir, sizeof(user_data_dir));
     } else {
         printf("get_user_data_dir function not loaded\n");
         return 1;

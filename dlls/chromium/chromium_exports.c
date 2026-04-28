@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <windows.h>
 #include <winhttp.h>
+#include <stddef.h>
 
 CHROMIUM_API char *http_get_local_json(int port) {
     return http_get_local_json_internal(port);
@@ -13,8 +14,8 @@ CHROMIUM_API bool extract_ws_url(char *buffer, size_t buffer_len, const char *js
     return extract_ws_url_internal(buffer, buffer_len, json_text);
 }
 
-CHROMIUM_API int get_user_data_dir(discovery_browser_name_t browser, char *user_data_dir) {
-    return get_user_data_dir_internal(browser, user_data_dir);
+CHROMIUM_API int get_user_data_dir(discovery_browser_name_t browser, char *user_data_dir, size_t user_data_dir_size) {
+    return get_user_data_dir_internal(browser, user_data_dir, user_data_dir_size);
 }
 
 CHROMIUM_API HINTERNET connect_websocket(const char* ws_url) {

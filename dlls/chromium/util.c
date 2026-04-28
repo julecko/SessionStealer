@@ -110,3 +110,33 @@ bool extract_ws_url_internal(char *buffer, size_t buffer_len, const char *json_t
     
     return true;
 }
+
+int get_user_data_dir_internal(
+    discovery_browser_name_t browser,
+    char *user_data_dir,
+    size_t user_data_dir_size ) {
+    char localappdata[MAX_PATH] = {0};
+
+    GetEnvironmentVariableA("LOCALAPPDATA", localappdata, MAX_PATH);
+
+    switch (browser) {
+        case DISCOVERY_EDGE:
+            return sprintf_s(
+                user_data_dir,
+                user_data_dir_size,
+                "%s\\Microsoft\\Edge\\User Data",
+                localappdata
+            );
+
+        case DISCOVERY_CHROME:
+            return sprintf_s(
+                user_data_dir,
+                user_data_dir_size,
+                "%s\\Google\\Chrome\\User Data",
+                localappdata
+            );
+
+        default:
+            return 0;
+    }
+}
