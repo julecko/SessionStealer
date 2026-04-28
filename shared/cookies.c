@@ -13,7 +13,7 @@ bool init_cookie_csv(FILE *file) {
     return fprintf(file, "%s\n", COOKIE_HEADER) > 0;
 }
 
-void free_cookie(cookie_t *cookie) {
+static void free_cookie(cookie_t *cookie) {
     free(cookie->name);
     free(cookie->value);
     free(cookie->domain);

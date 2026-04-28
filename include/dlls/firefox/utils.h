@@ -3,8 +3,6 @@
 
 #include <stddef.h>
 
-void normalize_ini_path(char *path);
 int get_cookie_file(char *out, size_t out_size);
-
 
 #endif

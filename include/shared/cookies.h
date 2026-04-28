@@ -62,8 +62,8 @@ typedef struct cookie_t {
 } cookie_t;
 
 bool init_cookie_csv(FILE *file);
-void print_cookie(const cookie_t *cookie);
-bool write_cookie_csv(FILE *file, const cookie_t *cookie);
+void print_cookie(const cookie_t *c);
+bool write_cookie_csv(FILE *file, const cookie_t *c);
 void free_cookies(cookie_t *cookies, size_t count);
 cookie_t* read_cookies_csv(FILE *file, size_t *count);
 

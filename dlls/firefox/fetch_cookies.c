@@ -70,6 +70,13 @@ void fetch_cookies(const char *cookie_file, FILE *outfile) {
 
     int col_count = sqlite3_column_count(stmt);
 
+    if (col_count < 16) {
+        fputs("Unexpected schema!\n", stderr);
+        sqlite3_finalize(stmt);
+        sqlite3_close(db);
+        return;
+    }
+
     while (sqlite3_step(stmt) == SQLITE_ROW) {
         cookie_t cookie = {0};
         cookie.browser_type = BROWSER_FIREFOX;

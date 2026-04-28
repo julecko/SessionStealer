@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdio.h>
 
-void normalize_ini_path(char *path) {
+static void normalize_ini_path(char *path) {
     if (!path)
         return;
 
