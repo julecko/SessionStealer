@@ -144,7 +144,9 @@ echo Running Cppcheck static analysis only...
     -I"%CD%\include" ^
     -I"%CD%\include\dlls" ^
     "%CD%\src" ^
-    "%CD%\dlls"
+    "%CD%\dlls" ^
+    "%CD%\tests" ^
+    "%CD%\shared"
 
 set "CPPCHECK_EXIT=%ERRORLEVEL%"
 echo Cppcheck finished with exit code %CPPCHECK_EXIT%

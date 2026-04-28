@@ -22,7 +22,7 @@ static void print_help(FILE *file) {
     fputs("Supported browsers:\n", file);
     fputs("    Edge\n", file);
     //fputs("    Chrome\n", file);
-    //fputs("    Firefox\n", file);
+    fputs("    Firefox\n", file);
     fputs("Examples:\n", file);
     fputs("    sessionstealer export -v -> exports cookies from later dicovered and selected browser into default file with verbose output\n", file);
     fputs("    sessionstealer import -f cookies.csv -b edge -> import cookies from cookies.csv into edge\n", file);

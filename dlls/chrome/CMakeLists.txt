@@ -1,8 +1,8 @@
 # -----------------------
-# edge_browser_core — static lib, all logic, testable
+# chrome_browser_core — static lib, all logic, testable
 # -----------------------
 set(CORE_SOURCES
-    edge.c
+    chrome.c
     fetch_cookies.c
     load_cookies.c
     ../../shared/cookies.c
@@ -10,61 +10,61 @@ set(CORE_SOURCES
     ../../shared/cookie_utils.c
 )
 
-add_library(edge_browser_core STATIC ${CORE_SOURCES})
+add_library(chrome_browser_core STATIC ${CORE_SOURCES})
 
-target_include_directories(edge_browser_core PUBLIC
+target_include_directories(chrome_browser_core PUBLIC
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/include/dlls
 )
 
-target_link_libraries(edge_browser_core PRIVATE winhttp)
+target_link_libraries(chrome_browser_core PRIVATE winhttp)
 
-target_compile_definitions(edge_browser_core PRIVATE
+target_compile_definitions(chrome_browser_core PRIVATE
     $<$<CONFIG:Debug>:DEBUG_MODE=1>
     $<$<CONFIG:Release>:NDEBUG>
 )
 
 if (MSVC)
-    target_compile_options(edge_browser_core PRIVATE
+    target_compile_options(chrome_browser_core PRIVATE
         $<$<CONFIG:Debug>:${GLOBAL_DEBUG_FLAGS}>
         $<$<CONFIG:Release>:${GLOBAL_RELEASE_FLAGS}>
     )
 else()
-    target_compile_options(edge_browser_core PRIVATE
+    target_compile_options(chrome_browser_core PRIVATE
         $<$<CONFIG:Debug>:${GLOBAL_DEBUG_FLAGS}>
         $<$<CONFIG:Release>:${GLOBAL_RELEASE_FLAGS}>
     )
 endif()
 
 # -----------------------
-# edge_browser — thin DLL, only exposes public API
+# chrome_browser — thin DLL, only exposes public API
 # -----------------------
-add_library(edge_browser SHARED
-    edge_exports.c
+add_library(chrome_browser SHARED
+    chrome_exports.c
 )
 
-target_link_libraries(edge_browser PRIVATE edge_browser_core)
-target_compile_definitions(edge_browser PRIVATE
-    EDGE_EXPORTS
+target_link_libraries(chrome_browser PRIVATE chrome_browser_core)
+target_compile_definitions(chrome_browser PRIVATE
+    CHROME_EXPORTS
     $<$<CONFIG:Debug>:DEBUG_MODE=1>
     $<$<CONFIG:Release>:NDEBUG>
 )
-set_target_properties(edge_browser PROPERTIES
+set_target_properties(chrome_browser PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
 if (MSVC)
-    target_compile_options(edge_browser PRIVATE
+    target_compile_options(chrome_browser PRIVATE
         $<$<CONFIG:Debug>:${GLOBAL_DEBUG_FLAGS}>
         $<$<CONFIG:Release>:${GLOBAL_RELEASE_FLAGS}>
     )
-    target_link_options(edge_browser PRIVATE
+    target_link_options(chrome_browser PRIVATE
         $<$<CONFIG:Debug>:/DEBUG>
     )
 else()
-    target_compile_options(edge_browser PRIVATE
+    target_compile_options(chrome_browser PRIVATE
         $<$<CONFIG:Debug>:${GLOBAL_DEBUG_FLAGS}>
         $<$<CONFIG:Release>:${GLOBAL_RELEASE_FLAGS}>
     )
