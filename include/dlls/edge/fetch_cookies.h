@@ -5,6 +5,6 @@
 #include <winhttp.h>
 #include <stdio.h>
 
-void fetch_cookies(const char *ws_url, const FILE *outfile);
+void fetch_cookies(const char *ws_url, FILE *outfile);
 
 #endif

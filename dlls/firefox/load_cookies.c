@@ -6,7 +6,7 @@
 #include <stdio.h>
 
 
-void load_cookies(const char *cookie_file, const FILE *infile) {
+void load_cookies(const char *cookie_file, FILE *infile) {
     if (!infile) {
         fprintf(stderr, "Input file required\n");
         return;

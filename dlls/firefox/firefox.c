@@ -21,8 +21,8 @@ int import_browser_internal(const discovery_browser_t *browser, const char *file
         printf("Cookies file found %s\n", cookie_file);
     }
 
-    FILE *infile = fopen(filepath, "r");
-    if (!infile) {
+    FILE *infile;
+    if (fopen_s(&infile, filepath, "r") != 0) {
         printf("File not found\n");
         return 1;
     }
@@ -44,8 +44,8 @@ int export_browser_internal(const discovery_browser_t *browser, const char *file
         printf("Cookies file found %s\n", cookie_file);
     }
 
-    FILE *outfile = fopen(filepath, "w");
-    if (!outfile) {
+    FILE *outfile;
+    if (fopen_s(&outfile, filepath, "w") != 0) {
         fprintf(stderr, "Failed to open %s file\n", filepath);
         return 1;
     }

@@ -24,7 +24,7 @@ HINTERNET connect_websocket_internal(const char* ws_url) {
         swprintf(ws_fixed, 512, L"https://%ls", wurl_original + 6);
     } 
     else {
-        wcsncpy(ws_fixed, wurl_original, 511);
+        wcsncpy_s(ws_fixed, 512, wurl_original, 511);
         ws_fixed[511] = L'\0';
     }
 
@@ -142,7 +142,7 @@ void ws_send_internal(HINTERNET ws, const char *c) {
 // Caller must free char **out
 bool ws_recv_internal(HINTERNET ws, char **out, bool *frame_finished) {
     DWORD size = 0;
-    DWORD type = 0;
+    WINHTTP_WEB_SOCKET_BUFFER_TYPE type = 0;
     unsigned char buffer[WEBSOCKET_RECV_MAX];
 
     DWORD result = WinHttpWebSocketReceive(ws, buffer, sizeof(buffer)-1, &size, &type);
@@ -150,7 +150,15 @@ bool ws_recv_internal(HINTERNET ws, char **out, bool *frame_finished) {
     if (result != NO_ERROR) return false;
 
     buffer[size] = 0;
-    *out = _strdup(buffer);
+    char *copy = malloc(size + 1);
+    if (!copy) {
+        fputs("Malloc in ws_recv_internal failed\n", stderr);
+        return false;
+    }
+
+    memcpy(copy, buffer, size);
+    copy[size] = '\0';
+    *out = copy;
 
     *frame_finished = (type == WINHTTP_WEB_SOCKET_UTF8_MESSAGE_BUFFER_TYPE || type == WINHTTP_WEB_SOCKET_CLOSE_BUFFER_TYPE);
 

@@ -29,8 +29,8 @@ int get_cookie_file(char *out, size_t out_size) {
     snprintf(ini_path, sizeof(ini_path),
              "%s\\Mozilla\\Firefox\\profiles.ini", appdata);
 
-    FILE *f = fopen(ini_path, "r");
-    if (!f)
+    FILE *f;
+    if (fopen_s(&f, ini_path, "r") != 0)
         return -1;
 
     char line[512];
@@ -53,11 +53,11 @@ int get_cookie_file(char *out, size_t out_size) {
         }
 
         if (strncmp(line, "Path=", 5) == 0) {
-            strncpy(tmp_path, line + 5, sizeof(tmp_path) - 1);
+            strncpy_s(tmp_path, sizeof(tmp_path), line + 5, sizeof(tmp_path) - 1);
         }
 
         if (tmp_default && tmp_path[0] != 0) {
-            strncpy(profile_path, tmp_path, sizeof(profile_path) - 1);
+            strncpy_s(profile_path, sizeof(tmp_path), tmp_path, sizeof(profile_path) - 1);
             break;
         }
     }

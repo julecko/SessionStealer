@@ -100,6 +100,8 @@ bool write_cookie_csv(FILE *file, const cookie_t *c) {
             c->browser.firefox.originAttributes ? c->browser.firefox.originAttributes : ""
         ) > 0;
     }
+
+    return false;
 }
 
 cookie_t *read_cookies_csv(FILE *file, size_t *count) {
@@ -144,10 +146,10 @@ cookie_t *read_cookies_csv(FILE *file, size_t *count) {
 
         c->browser_type = fields[0] ? atoi(fields[0]) : BROWSER_EDGE;
 
-        c->name   = fields[1] ? strdup(fields[1]) : strdup("");
-        c->value  = fields[2] ? strdup(fields[2]) : strdup("");
-        c->domain = fields[3] ? strdup(fields[3]) : strdup("");
-        c->path   = fields[4] ? strdup(fields[4]) : strdup("");
+        c->name   = fields[1] ? _strdup(fields[1]) : _strdup("");
+        c->value  = fields[2] ? _strdup(fields[2]) : _strdup("");
+        c->domain = fields[3] ? _strdup(fields[3]) : _strdup("");
+        c->path   = fields[4] ? _strdup(fields[4]) : _strdup("");
         c->expires = fields[5] ? atoll(fields[5]) : 0;
         c->http_only = fields[6] ? atoi(fields[6]) : 0;
         c->secure    = fields[7] ? atoi(fields[7]) : 0;
@@ -162,7 +164,7 @@ cookie_t *read_cookies_csv(FILE *file, size_t *count) {
         } else if (c->browser_type == BROWSER_FIREFOX) {
             c->browser.firefox.creation_time    = fields[14] ? atoll(fields[14]) : 0;
             c->browser.firefox.last_accessed    = fields[15] ? atoll(fields[15]) : 0;
-            c->browser.firefox.originAttributes = fields[16] ? strdup(fields[16]) : strdup("");
+            c->browser.firefox.originAttributes = fields[16] ? _strdup(fields[16]) : _strdup("");
         }
 
         n++;

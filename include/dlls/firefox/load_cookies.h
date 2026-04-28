@@ -3,6 +3,6 @@
 
 #include <stdio.h>
 
-void load_cookies(const char *cookie_file, const FILE *infile);
+void load_cookies(const char *cookie_file, FILE *infile);
 
 #endif

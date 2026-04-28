@@ -3,6 +3,6 @@
 
 #include <stdio.h>
 
-void fetch_cookies(const char *cookie_file, const FILE *outfile);
+void fetch_cookies(const char *cookie_file, FILE *outfile);
 
 #endif

@@ -4,6 +4,6 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-void load_cookies(const char *ws_url, const FILE *infile, bool json_only);
+void load_cookies(const char *ws_url, FILE *infile, bool json_only);
 
 #endif

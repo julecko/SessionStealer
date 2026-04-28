@@ -1,8 +1,8 @@
 #include "dlls/chrome/chrome.h"
 #include "dlls/chromium/chromium_exports.h"
 #include "dlls/discovery/discovery.h"
-#include "chrome/fetch_cookies.h"
-#include "chrome/load_cookies.h"
+#include "dlls/chrome/fetch_cookies.h"
+#include "dlls/chrome/load_cookies.h"
 #include "shared/util.h"
 
 #include <stdio.h>
@@ -61,7 +61,7 @@ int import_browser_internal(const discovery_browser_t *browser, const char *file
     load_chromium_functions();
 
     char cmd[128];
-    sprintf(cmd, "taskkill /F /IM %s", get_browser_process(browser->browser_name));
+    sprintf_s(cmd, sizeof(cmd), "taskkill /F /IM %s", get_browser_process(browser->browser_name));
     
     run_program(1, "%s", cmd);
 
@@ -95,8 +95,9 @@ int import_browser_internal(const discovery_browser_t *browser, const char *file
 
     printf("%s\n", websocket_url);
 
-    FILE *infile = fopen(filepath, "r");
-    if (!infile) {
+    FILE *infile = NULL;
+
+    if (fopen_s(&infile, filepath, "r") != 0) {
         printf("File not found\n");
         return 1;
     }
@@ -112,7 +113,7 @@ int export_browser_internal(const discovery_browser_t *browser, const char *file
     load_chromium_functions();
 
     char cmd[128];
-    sprintf(cmd, "taskkill /F /IM %s", get_browser_process(browser->browser_name));
+    sprintf_s(cmd, sizeof(cmd), "taskkill /F /IM %s", get_browser_process(browser->browser_name));
     
     run_program(1, "%s", cmd);
 
@@ -146,8 +147,8 @@ int export_browser_internal(const discovery_browser_t *browser, const char *file
 
     printf("%s\n", websocket_url);
 
-    FILE *outfile = fopen(filepath, "w");
-    if (!outfile) {
+    FILE *outfile;
+    if (fopen_s(&outfile, filepath, "w") != 0) {
         fprintf(stderr, "Couldnt open %s for writing\n", filepath);
         return 1;
     }

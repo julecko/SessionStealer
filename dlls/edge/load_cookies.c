@@ -10,7 +10,7 @@
 
 // Caller must free
 static char *json_escape(const char *input) {
-    if (!input) return strdup("");
+    if (!input) return _strdup("");
 
     size_t len = strlen(input);
     size_t max_len = len * 6 + 1;
@@ -30,7 +30,7 @@ static char *json_escape(const char *input) {
             case '\t': *p++ = '\\'; *p++ = 't';  break;
             default:
                 if (c <= 0x1F) {
-                    p += sprintf(p, "\\u%04x", c);
+                    p += sprintf_s(p, sizeof(p), "\\u%04x", c);
                 } else {
                     *p++ = c;
                 }
@@ -94,7 +94,7 @@ static char *generate_cookie_json(const cookie_t *c, int message_id) {
     return json;
 }
 
-void load_cookies(const char *ws_url, const FILE *infile, bool json_only) {
+void load_cookies(const char *ws_url, FILE *infile, bool json_only) {
     if (!infile) {
         fprintf(stderr, "Input file required\n");
         return;
@@ -112,8 +112,7 @@ void load_cookies(const char *ws_url, const FILE *infile, bool json_only) {
     HINTERNET ws = NULL;
 
     if (json_only) {
-        json_file = fopen("cookies.json", "w");
-        if (!json_file) {
+        if (fopen_s(&json_file, "cookies.json", "w") != 0) {
             fprintf(stderr, "Failed to open cookies.json\n");
             free_cookies(cookies, count);
             return;

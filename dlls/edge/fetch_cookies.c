@@ -92,7 +92,7 @@ static char *get_cookie(cookie_t *cookie, char *start_original) {
         { "sourcePort",    &cookie->browser.edge.source_port, TYPE_INT, true },
     };
 
-    const char *object_start = strstr(start_original, "{\"name");
+    char *object_start = strstr(start_original, "{\"name");
     if (!object_start) {
         return NULL;
     }
@@ -129,7 +129,7 @@ static char *get_cookie(cookie_t *cookie, char *start_original) {
     return cookie_end + 1;
 }
 
-void fetch_cookies(const char *ws_url, const FILE *outfile) {
+void fetch_cookies(const char *ws_url, FILE *outfile) {
     if (!ws_url || !outfile) {
         fputs("Invalid args for function fetch_cookies", stderr);
         return;
@@ -152,7 +152,8 @@ void fetch_cookies(const char *ws_url, const FILE *outfile) {
 
     int msg_id = 1;
     char msg[256];
-    sprintf(msg,
+    sprintf_s(msg,
+        sizeof(msg),
         "{\"id\":%d,\"method\":\"Network.getAllCookies\"}",
         msg_id);
 
@@ -163,8 +164,8 @@ void fetch_cookies(const char *ws_url, const FILE *outfile) {
     
     char remaining_buffer[WEBSOCKET_RECV_MAX*2];
     size_t remaining_buffer_length = 0;
-    const char *start;
-    const char *tmp;
+    char *start;
+    char *tmp;
     char *resp;
     while (1) {
         bool last_frame;

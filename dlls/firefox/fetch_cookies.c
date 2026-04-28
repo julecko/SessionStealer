@@ -39,7 +39,7 @@ static void process_cookie_row(sqlite3_stmt *stmt, cookie_t *c) {
     }
 }
 
-void fetch_cookies(const char *cookie_file, const FILE *outfile) {
+void fetch_cookies(const char *cookie_file, FILE *outfile) {
     if (!cookie_file || !outfile) {
         fprintf(stderr, "Invalid arguments for function fetch cookies\n");
         return;

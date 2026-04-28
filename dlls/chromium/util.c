@@ -117,12 +117,14 @@ int get_user_data_dir_internal(discovery_browser_name_t browser, char *user_data
 
     switch (browser) {
         case DISCOVERY_EDGE:
-            return sprintf(user_data_dir,
+            return sprintf_s(user_data_dir,
+                sizeof(user_data_dir),
                 "%s\\Microsoft\\Edge\\User Data",
                 localappdata);
 
         case DISCOVERY_CHROME:
-            return sprintf(user_data_dir,
+            return sprintf_s(user_data_dir,
+                sizeof(user_data_dir),
                 "%s\\Google\\Chrome\\User Data",
                 localappdata);
 
