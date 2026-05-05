@@ -44,24 +44,12 @@ static void load_chromium_functions() {
     }
 }
 
-static const char *get_browser_process(discovery_browser_name_t browser) {
-    switch (browser) {
-        case DISCOVERY_EDGE:
-            return "msedge.exe";
-        case DISCOVERY_CHROME:
-            return "chrome.exe";
-        default:
-            return NULL;
-    }
-}
-
-
 // cppcheck-suppress unusedFunction
 int import_browser_internal(const discovery_browser_t *browser, const char *filepath) {
     load_chromium_functions();
 
     char cmd[128];
-    sprintf_s(cmd, sizeof(cmd), "taskkill /F /IM %s", get_browser_process(browser->browser_name));
+    sprintf_s(cmd, sizeof(cmd), "taskkill /F /IM %s", "chrome.exe");
     
     run_program(1, "%s", cmd);
 
@@ -113,7 +101,7 @@ int export_browser_internal(const discovery_browser_t *browser, const char *file
     load_chromium_functions();
 
     char cmd[128];
-    sprintf_s(cmd, sizeof(cmd), "taskkill /F /IM %s", get_browser_process(browser->browser_name));
+    sprintf_s(cmd, sizeof(cmd), "taskkill /F /IM %s", "chrome.exe");
     
     run_program(1, "%s", cmd);
 
