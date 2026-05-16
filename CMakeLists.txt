@@ -48,6 +48,7 @@ add_subdirectory(dlls/discovery)
 add_subdirectory(dlls/firefox)
 add_subdirectory(dlls/chromium)
 add_subdirectory(dlls/edge)
+add_subdirectory(dlls/chrome)
 
 enable_testing()
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR BUILD_TESTS)

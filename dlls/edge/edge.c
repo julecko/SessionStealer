@@ -1,8 +1,8 @@
-#include "edge/edge.h"
+#include "dlls/chrome/chrome.h"
 #include "dlls/chromium/chromium_exports.h"
 #include "dlls/discovery/discovery.h"
-#include "edge/fetch_cookies.h"
-#include "edge/load_cookies.h"
+#include "dlls/chrome/fetch_cookies.h"
+#include "dlls/chrome/load_cookies.h"
 #include "shared/util.h"
 
 #include <stdio.h>
@@ -18,6 +18,51 @@ connect_websocket_fn connect_websocket_ptr = NULL;
 ws_send_fn ws_send_ptr = NULL;
 ws_recv_fn ws_recv_ptr = NULL;
 close_websocket_fn close_websocket_ptr = NULL;
+
+static int get_websocket_url(const discovery_browser_t *browser,
+                             int port,
+                             const char *extra_args,
+                             char *out_ws,
+                             size_t out_size) {
+    if (!get_user_data_dir_ptr || !http_get_local_json_ptr || !extract_ws_url_ptr) {
+        fprintf(stderr, "Chromium functions not loaded\n");
+        return 1;
+    }
+
+    char cmd[128];
+    sprintf_s(cmd, sizeof(cmd), "taskkill /F /IM %s", "msedge.exe");
+    run_program(1, "%s", cmd);
+
+    char user_data_dir[MAX_PATH];
+    get_user_data_dir_ptr(browser->browser_name, user_data_dir, sizeof(user_data_dir));
+
+    run_program(0,
+        "\"%s\" %s --remote-debugging-port=%d "
+        "--remote-allow-origins=http://localhost:%d "
+        "--user-data-dir=\"%s\" "
+        "--disable-logging --log-level=3",
+        browser->exe_path,
+        extra_args,
+        port, port,
+        user_data_dir
+    );
+
+    char *json = http_get_local_json_ptr(port);
+    if (!json) {
+        fputs("Json not returned\n", stderr);
+        return 1;
+    }
+
+    bool ok = extract_ws_url_ptr(out_ws, out_size, json);
+    free(json);
+
+    if (!ok) {
+        fputs("Failed to extract websocket URL\n", stderr);
+        return 1;
+    }
+
+    return 0;
+}
 
 static void load_chromium_functions() {
     if (hChromium) return;
@@ -47,49 +92,20 @@ static void load_chromium_functions() {
 // cppcheck-suppress unusedFunction
 int import_browser_internal(const discovery_browser_t *browser, const char *filepath) {
     load_chromium_functions();
+    char ws[WEBSOCKET_URL_MAX] = {0};
 
-    char cmd[128];
-    sprintf_s(cmd, sizeof(cmd), "taskkill /F /IM %s", "msedge.exe");
-    
-    run_program(1, "%s", cmd);
-
-    int port = 5000;
-    char user_data_dir[MAX_PATH];
-    if (get_user_data_dir_ptr) {
-        get_user_data_dir_ptr(browser->browser_name, user_data_dir, sizeof(user_data_dir));
-    } else {
-        printf("get_user_data_dir function not loaded\n");
+    if (get_websocket_url(browser, 5000,
+        "--profile-directory=\"Profile 2\"",
+        ws, sizeof(ws)))
         return 1;
-    }
-
-    run_program(0, "\"%s\" --remote-debugging-port=%d --remote-allow-origins=http://localhost:%d --user-data-dir=\"%s\" --profile-directory=\"Profile 2\" \
-                    --disable-logging --log-level=3",
-                browser->exe_path, port, port, user_data_dir);
-
-    char *initial_json = http_get_local_json_ptr ? http_get_local_json_ptr(port) : NULL;
-    if (!initial_json) {
-        fputs("Json from url was not returned\n", stderr);
-        return 1;
-    }
-
-    char websocket_url[WEBSOCKET_URL_MAX] = {0};
-    bool result = extract_ws_url_ptr ? extract_ws_url_ptr(websocket_url, sizeof(websocket_url), initial_json) : false;
-
-    free(initial_json);
-    if (!result) {
-        fputs("Websocket url could not be extracted\n", stderr);
-        return 1;
-    }
-
-    printf("%s\n", websocket_url);
 
     FILE *infile;
     if (fopen_s(&infile, filepath, "r") != 0) {
-        printf("File not found\n");
+        fprintf(stderr, "File not found\n");
         return 1;
     }
 
-    load_cookies(websocket_url, infile, false);
+    load_cookies(ws, infile, false);
     fclose(infile);
 
     return 0;
@@ -98,51 +114,21 @@ int import_browser_internal(const discovery_browser_t *browser, const char *file
 // cppcheck-suppress unusedFunction
 int export_browser_internal(const discovery_browser_t *browser, const char *filepath) {
     load_chromium_functions();
+    char ws[WEBSOCKET_URL_MAX] = {0};
 
-    char cmd[128];
-    sprintf_s(cmd, sizeof(cmd), "taskkill /F /IM %s", "msedge.exe");
-    
-    run_program(1, "%s", cmd);
-
-    int port = 5000;
-    char user_data_dir[MAX_PATH];
-    if (get_user_data_dir_ptr) {
-        get_user_data_dir_ptr(browser->browser_name, user_data_dir, sizeof(user_data_dir));
-    } else {
-        printf("get_user_data_dir function not loaded\n");
+    if (get_websocket_url(browser, 5000,
+        "--headless --disable-gpu --profile-directory=\"Default\"",
+        ws, sizeof(ws)))
         return 1;
-    }
-
-    run_program(0, "\"%s\" --headless --disable-gpu --remote-debugging-port=%d --remote-allow-origins=http://localhost:%d --user-data-dir=\"%s\" --profile-directory=\"Default\" \
-                    --disable-logging --log-level=3",
-                browser->exe_path, port, port, user_data_dir);
-
-    char *initial_json = http_get_local_json_ptr ? http_get_local_json_ptr(port) : NULL;
-    if (!initial_json) {
-        fputs("Json from url was not returned\n", stderr);
-        return 1;
-    }
-
-    char websocket_url[WEBSOCKET_URL_MAX] = {0};
-    bool result = extract_ws_url_ptr ? extract_ws_url_ptr(websocket_url, sizeof(websocket_url), initial_json) : false;
-
-    free(initial_json);
-    if (!result) {
-        fputs("Websocket url could not be extracted\n", stderr);
-        return 1;
-    }
-
-    printf("%s\n", websocket_url);
 
     FILE *outfile;
     if (fopen_s(&outfile, filepath, "w") != 0) {
-        fprintf(stderr, "Couldnt open %s for writing\n", filepath);
+        fprintf(stderr, "Couldn't open %s\n", filepath);
         return 1;
     }
-    fetch_cookies(websocket_url, outfile);
-    fclose(outfile);
 
-    run_program(0, "%s", cmd);
+    fetch_cookies(ws, outfile);
+    fclose(outfile);
 
     return 0;
 }
